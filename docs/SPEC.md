@@ -139,7 +139,7 @@ Cost = terminal latent distance + path distance + action effort + jerk.
 
 | # | Deliverable | Exit criterion |
 | --- | --- | --- |
-| M0 | Harness + tests | ✅ 102 tests, 87% coverage, no external deps |
+| M0 | Harness + tests | ✅ 110 tests, 91% coverage, no external deps |
 | M1 | Real-sim collection | 1k episodes written; frames visually sane |
 | M2 | Loader integration | A1 confirmed; upstream reads od-MPC shards |
 | M3 | Tokenizer trained | Reconstruction PSNR reported on held-out data |
@@ -174,3 +174,10 @@ It is still not vendored, to keep one integration pattern rather than two.
 5. **Goal specification** — a goal *image* must be encoded by the same
    tokenizer. Where do goal images come from at evaluation time? Simplest
    answer: replay a held-out episode's final frame.
+6. **Checkout/GPU availability** — M1 (real-sim collection) needs a real
+   `INNATE_OS_ROOT` checkout and a machine to run MuJoCo on; resolving A1
+   needs an `OPEN_DREAMER_ROOT` checkout to read `dreamer/data/transforms.py`
+   from. A 2026-08-04 session had neither and no GPU, so it could not advance
+   M1 or A1 and worked on closing pure-Python test coverage instead
+   (`od_mpc/sim/adapter.py`'s checkout-resolution logic, 0% → 96%). Both
+   remain the correct next actions once a checkout is supplied.
