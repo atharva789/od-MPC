@@ -1,0 +1,35 @@
+# Data-annotation run settings.
+#
+# Consumed by od_mpc.data. These are od-MPC's own knobs; overrides passed to
+# open-dreamer's training scripts live in configs/train.yaml.
+
+output_dir: datasets/mars_nav/train
+episodes: 1000
+episodes_per_shard: 50
+
+collector:
+  steps_per_episode: 160
+  # 10 Hz. Must stay well inside the simulator's 0.5 s cmd_vel watchdog, or the
+  # base stops between commands and the dataset fills with stationary frames.
+  control_dt: 0.1
+  camera: main
+  lidar_rays: 360
+  lidar_max_range: 12.0
+  # Physics settles after reset so frame 0 is not mid-spawn.
+  settle_seconds: 0.5
+
+# Render at training resolution directly; VirtualMars takes render_wh, so there
+# is no reason to render 640x480 and downsample.
+render_wh: [64, 64]
+
+explorer:
+  max_linear: 0.4   # matches the simulator's MAX_LINEAR
+  max_yaw: 1.0      # matches the simulator's MAX_YAW
+  clearance_stop: 0.45
+  clearance_slow: 1.2
+  front_arc_deg: 60.0
+  # Committing to a heading stops the policy dithering between two equally
+  # open directions, which would produce near-duplicate frames.
+  commit_steps: 12
+  reverse_steps: 8
+  turn_gain: 1.5

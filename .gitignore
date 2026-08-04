@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Tooling
+.ruff_cache/
+.mypy_cache/
+.DS_Store
+
+# od-MPC outputs: datasets, checkpoints and rollout videos are large and
+# reproducible from configs, so they never belong in the repo.
+datasets/
+outputs/
+checkpoints/
+runs/
+wandb/
+*.array_record
+*.npz
+*.mp4
+
+# Local environment: may point at private checkout paths.
+.env

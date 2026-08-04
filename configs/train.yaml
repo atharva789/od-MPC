@@ -1,0 +1,37 @@
+# Overrides handed to open-dreamer's training scripts.
+#
+# od-MPC does not copy upstream configs; it passes Hydra-style key=value
+# overrides on top of whatever the checkout ships. Keys here name upstream's
+# schema, values are od-MPC's.
+#
+# BLOCKED: assumption A1 in docs/SPEC.md must be confirmed before these run.
+# The record key for a continuous action channel has not yet been checked
+# against a pinned upstream revision.
+
+tokenizer:
+  overrides:
+    - dataset.array_record_path=datasets/mars_nav/train
+    - dataset.H=64
+    - dataset.W=64
+    - dataset.patch_size=8
+    # 2-D base velocity: (vx, wz), normalised to [-1, 1].
+    - dataset.continuous_action_dim=2
+    - dataset.num_binary_actions=0
+    - dataset.categorical_action_dim=0
+
+dynamics:
+  overrides:
+    - dataset.array_record_path=datasets/mars_nav/train
+    - dataset.continuous_action_dim=2
+    - dataset.num_binary_actions=0
+    - dataset.categorical_action_dim=0
+    # Open question 3 in SPEC: upstream defaults to 192 frames, which is ~19 s
+    # at 10 Hz and probably longer than navigation needs.
+    - dynamics.context_length=64
+
+# Latent normalisation must be computed from the MARS dataset after the
+# tokenizer is trained, never inherited from an upstream dataset.
+# See open question 2 in docs/SPEC.md.
+latent_stats:
+  computed: false
+  source_split: datasets/mars_nav/train

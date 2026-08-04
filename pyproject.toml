@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "od-mpc"
+version = "0.1.0"
+description = "Latent model-predictive control for the MARS robot, on top of open-dreamer's world model"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Atharva Gupta" }]
+keywords = ["world-models", "robotics", "model-predictive-control", "mars"]
+
+# The core package is numpy-only on purpose: collection, validation and
+# planning all run without JAX so they stay testable on a laptop.
+dependencies = ["numpy>=1.24"]
+
+[project.optional-dependencies]
+# Writing ArrayRecord shards for open-dreamer's grain loader.
+shards = ["array_record>=0.5", "msgpack>=1.0"]
+dev = ["pytest>=7.4", "pytest-cov>=4.1", "ruff>=0.4", "black>=24.1", "isort>=5.13"]
+
+[project.urls]
+Repository = "https://github.com/atharva789/od-MPC"
+
+[tool.setuptools.packages.find]
+include = ["od_mpc*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "unit: runs anywhere, no simulator or model required",
+    "integration: needs an innate-os checkout, open-dreamer, or a GPU",
+]
+
+[tool.black]
+line-length = 90
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+line_length = 90
+
+[tool.ruff]
+line-length = 90
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
