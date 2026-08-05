@@ -139,7 +139,7 @@ Cost = terminal latent distance + path distance + action effort + jerk.
 
 | # | Deliverable | Exit criterion |
 | --- | --- | --- |
-| M0 | Harness + tests | ✅ 110 tests, 91% coverage, no external deps |
+| M0 | Harness + tests | ✅ 113 tests, 94% coverage, no external deps |
 | M1 | Real-sim collection | 1k episodes written; frames visually sane |
 | M2 | Loader integration | A1 confirmed; upstream reads od-MPC shards |
 | M3 | Tokenizer trained | Reconstruction PSNR reported on held-out data |
@@ -180,4 +180,13 @@ It is still not vendored, to keep one integration pattern rather than two.
    from. A 2026-08-04 session had neither and no GPU, so it could not advance
    M1 or A1 and worked on closing pure-Python test coverage instead
    (`od_mpc/sim/adapter.py`'s checkout-resolution logic, 0% → 96%). Both
-   remain the correct next actions once a checkout is supplied.
+   remain the correct next actions once a checkout is supplied. A 2026-08-05
+   session had the same blocker (still no `INNATE_OS_ROOT`,
+   `OPEN_DREAMER_ROOT`, or GPU in this environment) and closed the next
+   pure-Python gap: `od_mpc/data/writer.py`'s optional `array_record` backend
+   (rotate/write/flush and the `array_record`-present-but-`msgpack`-missing
+   fallback) was 80% covered because neither package is installed here. Tests
+   inject fake `array_record`/`msgpack` modules via `sys.modules` — both are
+   generic third-party libraries, not open-dreamer or innate-os, so this
+   raises no licensing concern — taking the module to 100%. M1/A1 remain
+   blocked pending a checkout.

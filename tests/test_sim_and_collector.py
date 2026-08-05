@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import math
+import sys
+import types
 
 import numpy as np
 import pytest
@@ -207,3 +209,85 @@ def test_npz_shard_roundtrips(tmp_path) -> None:
         shape = tuple(data["video_shape_0"])
         frames = data["video_0"].reshape(shape)
     np.testing.assert_array_equal(frames, episode.frames)
+
+
+def _install_fake_array_record_module(monkeypatch: pytest.MonkeyPatch) -> type:
+    """Make ``array_record`` importable without the real package installed.
+
+    Returns a fake ``ArrayRecordWriter`` class that records every call made to
+    it, so tests can assert on the array_record code path in ShardWriter
+    without depending on the real (optional, not installed here) package.
+    """
+
+    class _FakeArrayRecordWriter:
+        def __init__(self, path: str, options: str) -> None:
+            self.path = path
+            self.options = options
+            self.written: list[bytes] = []
+            self.closed = False
+
+        def write(self, record: bytes) -> None:
+            self.written.append(record)
+
+        def close(self) -> None:
+            self.closed = True
+
+    array_record_module = types.ModuleType("array_record.python.array_record_module")
+    array_record_module.ArrayRecordWriter = _FakeArrayRecordWriter
+    monkeypatch.setitem(sys.modules, "array_record", types.ModuleType("array_record"))
+    monkeypatch.setitem(
+        sys.modules, "array_record.python", types.ModuleType("array_record.python")
+    )
+    monkeypatch.setitem(
+        sys.modules, "array_record.python.array_record_module", array_record_module
+    )
+
+    msgpack_module = types.ModuleType("msgpack")
+    msgpack_module.packb = lambda obj, use_bin_type=True: repr(obj).encode()
+    monkeypatch.setitem(sys.modules, "msgpack", msgpack_module)
+
+    return _FakeArrayRecordWriter
+
+
+def test_array_record_backend_used_when_available(
+    tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _install_fake_array_record_module(monkeypatch)
+
+    with ShardWriter(tmp_path, episodes_per_shard=2) as writer:
+        assert writer.backend == "array_record"
+        for _ in range(3):
+            writer.write(_episode())
+        assert writer.num_shards == 2
+
+
+def test_array_record_backend_writes_and_closes_each_shard(
+    tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    fake_writer_cls = _install_fake_array_record_module(monkeypatch)
+    created: list = []
+    real_init = fake_writer_cls.__init__
+
+    def _tracking_init(self, path: str, options: str) -> None:
+        real_init(self, path, options)
+        created.append(self)
+
+    fake_writer_cls.__init__ = _tracking_init
+
+    with ShardWriter(tmp_path, episodes_per_shard=2) as writer:
+        for _ in range(3):
+            writer.write(_episode())
+
+    assert len(created) == 2
+    assert [len(inst.written) for inst in created] == [2, 1]
+    assert all(inst.closed for inst in created)
+
+
+def test_array_record_backend_falls_back_to_npz_without_msgpack(
+    tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _install_fake_array_record_module(monkeypatch)
+    monkeypatch.setitem(sys.modules, "msgpack", None)
+
+    writer = ShardWriter(tmp_path)
+    assert writer.backend == "npz"
