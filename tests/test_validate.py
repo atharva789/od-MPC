@@ -115,6 +115,11 @@ def test_psnr_rejects_shape_mismatch() -> None:
         psnr(np.zeros((4, 4)), np.zeros((5, 5)))
 
 
+def test_psnr_rejects_non_positive_data_range() -> None:
+    with pytest.raises(ValueError, match="data_range must be positive"):
+        psnr(np.zeros((2, 2)), np.zeros((2, 2)), data_range=0.0)
+
+
 def test_pose_drift_is_zero_for_a_perfect_rollout() -> None:
     poses = np.array([[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]])
     position, heading = pose_drift(poses, poses)
@@ -127,6 +132,16 @@ def test_pose_drift_measures_euclidean_distance() -> None:
     actual = np.array([[0.0, 0.0, 0.0]])
     position, _ = pose_drift(predicted, actual)
     assert position[0] == pytest.approx(5.0)
+
+
+def test_pose_drift_rejects_shape_mismatch() -> None:
+    with pytest.raises(ValueError, match="Shape mismatch"):
+        pose_drift(np.zeros((4, 3)), np.zeros((5, 3)))
+
+
+def test_pose_drift_rejects_wrong_pose_width() -> None:
+    with pytest.raises(ValueError, match=r"\(T, 3\)"):
+        pose_drift(np.zeros((4, 2)), np.zeros((4, 2)))
 
 
 def test_heading_error_takes_the_short_way_round() -> None:
@@ -146,3 +161,13 @@ def test_drift_horizon_is_zero_when_the_first_step_fails() -> None:
 
 def test_drift_horizon_returns_full_length_when_always_within_tolerance() -> None:
     assert drift_horizon(np.array([0.1, 0.1, 0.1]), tolerance=0.5) == 3
+
+
+def test_drift_horizon_rejects_non_1d_input() -> None:
+    with pytest.raises(ValueError, match="must be 1-D"):
+        drift_horizon(np.zeros((3, 2)), tolerance=0.5)
+
+
+def test_drift_horizon_rejects_non_positive_tolerance() -> None:
+    with pytest.raises(ValueError, match="tolerance must be positive"):
+        drift_horizon(np.array([0.1, 0.2]), tolerance=0.0)

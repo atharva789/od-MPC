@@ -8,7 +8,7 @@ them, then plan action sequences by rolling candidate commands forward in
 latent space and picking the one that lands nearest a goal image.
 
 > **Status: scaffolding.** The data, validation, and planning logic is written
-> and tested (113 tests, 94% coverage). Nothing has been trained yet. Every
+> and tested (118 tests, 95% coverage). Nothing has been trained yet. Every
 > claim below about *what the code does* is true; there are no claims yet about
 > what a trained model achieves. See [Roadmap](#roadmap).
 

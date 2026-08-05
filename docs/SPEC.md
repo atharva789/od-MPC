@@ -139,7 +139,7 @@ Cost = terminal latent distance + path distance + action effort + jerk.
 
 | # | Deliverable | Exit criterion |
 | --- | --- | --- |
-| M0 | Harness + tests | ✅ 113 tests, 94% coverage, no external deps |
+| M0 | Harness + tests | ✅ 118 tests, 95% coverage, no external deps |
 | M1 | Real-sim collection | 1k episodes written; frames visually sane |
 | M2 | Loader integration | A1 confirmed; upstream reads od-MPC shards |
 | M3 | Tokenizer trained | Reconstruction PSNR reported on held-out data |
@@ -190,3 +190,13 @@ It is still not vendored, to keep one integration pattern rather than two.
    generic third-party libraries, not open-dreamer or innate-os, so this
    raises no licensing concern — taking the module to 100%. M1/A1 remain
    blocked pending a checkout.
+7. A second 2026-08-05 session confirmed the blocker is unchanged (no
+   `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+   environment) and closed the next pure-Python gap: `od_mpc/validate/metrics.py`
+   was 85% covered, missing its four input-validation branches (`psnr`'s
+   non-positive `data_range`, `pose_drift`'s shape/width checks,
+   `drift_horizon`'s non-1-D and non-positive-tolerance checks). Added five
+   tests exercising each `ValueError` path, taking the module to 100% and the
+   suite to 118 tests / 95% overall coverage. M1/A1 remain blocked pending a
+   checkout; `od_mpc/data/collector.py` (90%) and `od_mpc/sim/stub.py` (92%)
+   are the next-lowest pure-Python gaps for a future session.
