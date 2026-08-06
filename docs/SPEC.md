@@ -139,7 +139,7 @@ Cost = terminal latent distance + path distance + action effort + jerk.
 
 | # | Deliverable | Exit criterion |
 | --- | --- | --- |
-| M0 | Harness + tests | ✅ 124 tests, 96% coverage, no external deps |
+| M0 | Harness + tests | ✅ 128 tests, 96% coverage, no external deps |
 | M1 | Real-sim collection | 1k episodes written; frames visually sane |
 | M2 | Loader integration | A1 confirmed; upstream reads od-MPC shards |
 | M3 | Tokenizer trained | Reconstruction PSNR reported on held-out data |
@@ -211,3 +211,14 @@ It is still not vendored, to keep one integration pattern rather than two.
    `od_mpc/mpc/cost.py` (92%), `od_mpc/sim/stub.py` (92%), and
    `od_mpc/validate/probe.py` (91%) are the next-lowest pure-Python gaps for a
    future session.
+9. A second 2026-08-06 session confirmed the blocker is unchanged yet again
+   (no `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+   environment) and closed the next pure-Python gap: `od_mpc/validate/probe.py`
+   was 91% covered, missing `pose_targets`' and `targets_to_pose`'s
+   shape-validation branches and `fit_pose_probe`'s non-2-D-latents and
+   fewer-than-two-samples branches. Added four tests exercising each
+   `ValueError` path, taking the module to 100% and the suite to 128 tests
+   (still 96% overall coverage, since the same source lines are now counted
+   as covered). M1/A1 remain blocked pending a checkout; `od_mpc/mpc/cost.py`
+   (92%) and `od_mpc/sim/stub.py` (92%) are the next-lowest pure-Python gaps
+   for a future session.

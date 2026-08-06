@@ -97,6 +97,26 @@ def test_probe_rejects_wrong_latent_width_at_predict() -> None:
         probe.predict(np.zeros((5, 7)))
 
 
+def test_probe_rejects_non_2d_latents() -> None:
+    with pytest.raises(ValueError, match="must be 2-D"):
+        fit_pose_probe(np.zeros(10), np.zeros((10, 3)))
+
+
+def test_probe_rejects_too_few_samples() -> None:
+    with pytest.raises(ValueError, match="at least two samples"):
+        fit_pose_probe(np.zeros((1, 4)), np.zeros((1, 3)))
+
+
+def test_pose_targets_rejects_wrong_pose_width() -> None:
+    with pytest.raises(ValueError, match=r"\(N, 3\)"):
+        pose_targets(np.zeros((5, 2)))
+
+
+def test_targets_to_pose_rejects_wrong_target_width() -> None:
+    with pytest.raises(ValueError, match=r"\(N, 4\)"):
+        targets_to_pose(np.zeros((5, 3)))
+
+
 # --- metrics ----------------------------------------------------------------
 
 
