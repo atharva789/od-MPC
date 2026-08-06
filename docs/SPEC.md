@@ -139,7 +139,7 @@ Cost = terminal latent distance + path distance + action effort + jerk.
 
 | # | Deliverable | Exit criterion |
 | --- | --- | --- |
-| M0 | Harness + tests | ✅ 118 tests, 95% coverage, no external deps |
+| M0 | Harness + tests | ✅ 124 tests, 96% coverage, no external deps |
 | M1 | Real-sim collection | 1k episodes written; frames visually sane |
 | M2 | Loader integration | A1 confirmed; upstream reads od-MPC shards |
 | M3 | Tokenizer trained | Reconstruction PSNR reported on held-out data |
@@ -200,3 +200,14 @@ It is still not vendored, to keep one integration pattern rather than two.
    suite to 118 tests / 95% overall coverage. M1/A1 remain blocked pending a
    checkout; `od_mpc/data/collector.py` (90%) and `od_mpc/sim/stub.py` (92%)
    are the next-lowest pure-Python gaps for a future session.
+8. A 2026-08-06 session confirmed the blocker is unchanged again (no
+   `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+   environment) and closed the next pure-Python gap: `od_mpc/data/collector.py`
+   was 90% covered, missing `CollectorConfig`'s `control_dt`/`settle_seconds`
+   validation, the `settle_seconds > 0` pre-roll branch in `collect_episode`,
+   and `Episode`'s frame/action/pose shape-validation branches. Added six
+   tests exercising each path, taking the module to 100% and the suite to
+   124 tests / 96% overall coverage. M1/A1 remain blocked pending a checkout;
+   `od_mpc/mpc/cost.py` (92%), `od_mpc/sim/stub.py` (92%), and
+   `od_mpc/validate/probe.py` (91%) are the next-lowest pure-Python gaps for a
+   future session.

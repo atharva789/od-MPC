@@ -147,12 +147,57 @@ def test_collector_config_rejects_tiny_episodes() -> None:
         CollectorConfig(steps_per_episode=1)
 
 
+def test_collector_config_rejects_non_positive_control_dt() -> None:
+    with pytest.raises(ValueError, match="control_dt must be positive"):
+        CollectorConfig(control_dt=0.0)
+
+
+def test_collector_config_rejects_negative_settle_seconds() -> None:
+    with pytest.raises(ValueError, match="settle_seconds must be non-negative"):
+        CollectorConfig(settle_seconds=-0.1)
+
+
+def test_collect_episode_settles_before_recording() -> None:
+    """settle_seconds > 0 zeroes cmd_vel and advances physics before frame 0."""
+    config = CollectorConfig(steps_per_episode=2, control_dt=0.1, settle_seconds=0.5)
+    sim = StubMars(render_wh=(16, 16))
+    episode = collect_episode(sim, config)
+    assert episode.length == 2
+
+
 def test_episode_rejects_mismatched_lengths() -> None:
     with pytest.raises(ValueError, match="share a length"):
         Episode(
             frames=np.zeros((4, 8, 8, 3), dtype=np.uint8),
             actions=np.zeros((3, 2), dtype=np.float32),
             poses=np.zeros((4, 3), dtype=np.float32),
+        )
+
+
+def test_episode_rejects_malformed_frames() -> None:
+    with pytest.raises(ValueError, match=r"frames must be \(T, H, W, 3\)"):
+        Episode(
+            frames=np.zeros((4, 8, 8), dtype=np.uint8),
+            actions=np.zeros((4, 2), dtype=np.float32),
+            poses=np.zeros((4, 3), dtype=np.float32),
+        )
+
+
+def test_episode_rejects_malformed_actions() -> None:
+    with pytest.raises(ValueError, match=r"actions must be \(T, 2\)"):
+        Episode(
+            frames=np.zeros((4, 8, 8, 3), dtype=np.uint8),
+            actions=np.zeros((4, 3), dtype=np.float32),
+            poses=np.zeros((4, 3), dtype=np.float32),
+        )
+
+
+def test_episode_rejects_malformed_poses() -> None:
+    with pytest.raises(ValueError, match=r"poses must be \(T, 3\)"):
+        Episode(
+            frames=np.zeros((4, 8, 8, 3), dtype=np.uint8),
+            actions=np.zeros((4, 2), dtype=np.float32),
+            poses=np.zeros((4, 2), dtype=np.float32),
         )
 
 
