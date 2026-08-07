@@ -139,7 +139,7 @@ Cost = terminal latent distance + path distance + action effort + jerk.
 
 | # | Deliverable | Exit criterion |
 | --- | --- | --- |
-| M0 | Harness + tests | ✅ 128 tests, 96% coverage, no external deps |
+| M0 | Harness + tests | ✅ 131 tests, 97% coverage, no external deps |
 | M1 | Real-sim collection | 1k episodes written; frames visually sane |
 | M2 | Loader integration | A1 confirmed; upstream reads od-MPC shards |
 | M3 | Tokenizer trained | Reconstruction PSNR reported on held-out data |
@@ -222,3 +222,14 @@ It is still not vendored, to keep one integration pattern rather than two.
    as covered). M1/A1 remain blocked pending a checkout; `od_mpc/mpc/cost.py`
    (92%) and `od_mpc/sim/stub.py` (92%) are the next-lowest pure-Python gaps
    for a future session.
+10. A 2026-08-07 session confirmed the blocker is unchanged yet again (no
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+    environment) and closed the next pure-Python gap: `od_mpc/mpc/cost.py`
+    was 92% covered, missing `GoalCostConfig`'s negative-weight rejection,
+    `goal_latent_cost`'s `predicted_latents`-too-few-dimensions rejection, and
+    the horizon-of-one branch where there is no successive-action pair to
+    charge a jerk penalty against. Added three tests exercising each path,
+    taking the module to 100% and the suite to 131 tests / 97% overall
+    coverage. M1/A1 remain blocked pending a checkout; `od_mpc/sim/stub.py`
+    (92%) and `od_mpc/actions.py` (94%) are the next-lowest pure-Python gaps
+    for a future session.

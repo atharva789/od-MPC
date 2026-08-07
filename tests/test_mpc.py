@@ -179,6 +179,26 @@ def test_cost_config_rejects_ignoring_the_goal() -> None:
         GoalCostConfig(terminal_weight=0.0, path_weight=0.0)
 
 
+def test_cost_config_rejects_negative_weights() -> None:
+    with pytest.raises(ValueError, match="non-negative"):
+        GoalCostConfig(terminal_weight=-1.0)
+
+
+def test_cost_rejects_latents_with_too_few_dimensions() -> None:
+    with pytest.raises(ValueError, match="at least"):
+        goal_latent_cost(np.zeros((2, 8)), np.zeros(8), np.zeros((2, 3, 2)))
+
+
+def test_cost_has_no_jerk_term_for_a_single_step_horizon() -> None:
+    """A horizon of one has no successive-action difference to penalise."""
+    goal = np.zeros(4)
+    latents = np.zeros((2, 1, 4))
+    steady = np.full((1, 2), 0.5)
+    swung = np.full((1, 2), -0.5)
+    costs = goal_latent_cost(latents, goal, np.stack([steady, swung]))
+    assert costs[0] == pytest.approx(costs[1])
+
+
 def test_planner_and_cost_compose() -> None:
     """End-to-end: plan through a cost built from goal_latent_cost."""
     goal = np.array([1.0, 0.0, 0.0, 0.0])
