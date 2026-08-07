@@ -139,7 +139,7 @@ Cost = terminal latent distance + path distance + action effort + jerk.
 
 | # | Deliverable | Exit criterion |
 | --- | --- | --- |
-| M0 | Harness + tests | ✅ 131 tests, 97% coverage, no external deps |
+| M0 | Harness + tests | ✅ 138 tests, 98% coverage, no external deps |
 | M1 | Real-sim collection | 1k episodes written; frames visually sane |
 | M2 | Loader integration | A1 confirmed; upstream reads od-MPC shards |
 | M3 | Tokenizer trained | Reconstruction PSNR reported on held-out data |
@@ -233,3 +233,15 @@ It is still not vendored, to keep one integration pattern rather than two.
     coverage. M1/A1 remain blocked pending a checkout; `od_mpc/sim/stub.py`
     (92%) and `od_mpc/actions.py` (94%) are the next-lowest pure-Python gaps
     for a future session.
+11. A second 2026-08-07 session confirmed the blocker is unchanged yet again
+    (no `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+    environment) and closed the next pure-Python gap: `od_mpc/sim/stub.py`
+    was 92% covered, missing `RoomBounds`' degenerate-extent rejection,
+    `StubMars.__init__`'s non-positive-`render_wh` and non-positive-`dt_substep`
+    rejections, `step`'s negative-duration rejection, `lidar_scan`'s
+    non-positive-`n_rays` and non-positive-`max_range` rejections, and the
+    `wrist` camera's vertical-flip branch in `render_rgb`. Added seven tests
+    exercising each path, taking the module to 100% and the suite to 138
+    tests / 98% overall coverage. M1/A1 remain blocked pending a checkout;
+    `od_mpc/actions.py` (94%) and `od_mpc/mpc/planner.py` (94%) are the
+    next-lowest pure-Python gaps for a future session.

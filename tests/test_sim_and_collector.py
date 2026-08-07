@@ -103,6 +103,43 @@ def test_stub_rejects_non_finite_command() -> None:
         StubMars().set_cmd_vel(float("nan"), 0.0)
 
 
+def test_room_bounds_rejects_degenerate_extents() -> None:
+    with pytest.raises(ValueError, match="Degenerate room bounds"):
+        RoomBounds(x_min=1.0, x_max=1.0)
+
+
+def test_stub_rejects_non_positive_render_wh() -> None:
+    with pytest.raises(ValueError, match="render_wh must be positive"):
+        StubMars(render_wh=(0, 16))
+
+
+def test_stub_rejects_non_positive_dt_substep() -> None:
+    with pytest.raises(ValueError, match="dt_substep must be positive"):
+        StubMars(dt_substep=0.0)
+
+
+def test_stub_rejects_negative_step_duration() -> None:
+    with pytest.raises(ValueError, match="duration must be non-negative"):
+        StubMars().step(-0.1)
+
+
+def test_stub_lidar_rejects_non_positive_n_rays() -> None:
+    with pytest.raises(ValueError, match="n_rays must be positive"):
+        StubMars().lidar_scan(0, max_range=5.0)
+
+
+def test_stub_lidar_rejects_non_positive_max_range() -> None:
+    with pytest.raises(ValueError, match="max_range must be positive"):
+        StubMars().lidar_scan(8, max_range=0.0)
+
+
+def test_stub_wrist_camera_is_vertically_flipped_main() -> None:
+    sim = StubMars(spawn=(0.0, 0.0, 0.3))
+    main = sim.render_rgb("main")
+    wrist = sim.render_rgb("wrist")
+    np.testing.assert_array_equal(wrist, main[::-1])
+
+
 # --- collector --------------------------------------------------------------
 
 
