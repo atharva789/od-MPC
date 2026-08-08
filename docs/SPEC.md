@@ -139,7 +139,7 @@ Cost = terminal latent distance + path distance + action effort + jerk.
 
 | # | Deliverable | Exit criterion |
 | --- | --- | --- |
-| M0 | Harness + tests | ✅ 138 tests, 98% coverage, no external deps |
+| M0 | Harness + tests | ✅ 142 tests, 99% coverage, no external deps |
 | M1 | Real-sim collection | 1k episodes written; frames visually sane |
 | M2 | Loader integration | A1 confirmed; upstream reads od-MPC shards |
 | M3 | Tokenizer trained | Reconstruction PSNR reported on held-out data |
@@ -245,3 +245,14 @@ It is still not vendored, to keep one integration pattern rather than two.
     tests / 98% overall coverage. M1/A1 remain blocked pending a checkout;
     `od_mpc/actions.py` (94%) and `od_mpc/mpc/planner.py` (94%) are the
     next-lowest pure-Python gaps for a future session.
+12. A 2026-08-08 session confirmed the blocker is unchanged yet again (no
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+    environment) and closed the next pure-Python gap: `od_mpc/mpc/planner.py`
+    was 94% covered, missing `PlannerConfig.__post_init__`'s sub-unit-horizon,
+    sub-unit-iterations, non-positive-std, and momentum-out-of-range rejection
+    branches. Added five tests exercising each `ValueError` path, taking the
+    module to 100% and the suite to 142 tests / 99% overall coverage. M1/A1
+    remain blocked pending a checkout; `od_mpc/actions.py` (94%),
+    `od_mpc/data/explorer.py` (96%), `od_mpc/sim/adapter.py` (96%), and
+    `od_mpc/train/pipeline.py` (96%) are the next-lowest pure-Python gaps for
+    a future session.

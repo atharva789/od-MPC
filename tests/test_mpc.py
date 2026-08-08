@@ -119,6 +119,30 @@ def test_config_rejects_std_floor_above_start() -> None:
         PlannerConfig(initial_std=0.1, min_std=0.5)
 
 
+def test_config_rejects_sub_unit_horizon() -> None:
+    with pytest.raises(ValueError, match="horizon"):
+        PlannerConfig(horizon=0)
+
+
+def test_config_rejects_sub_unit_iterations() -> None:
+    with pytest.raises(ValueError, match="iterations"):
+        PlannerConfig(iterations=0)
+
+
+def test_config_rejects_non_positive_std() -> None:
+    with pytest.raises(ValueError, match="Standard deviations"):
+        PlannerConfig(initial_std=0.0)
+    with pytest.raises(ValueError, match="Standard deviations"):
+        PlannerConfig(min_std=-0.1)
+
+
+def test_config_rejects_momentum_out_of_range() -> None:
+    with pytest.raises(ValueError, match="momentum"):
+        PlannerConfig(momentum=1.0)
+    with pytest.raises(ValueError, match="momentum"):
+        PlannerConfig(momentum=-0.1)
+
+
 # --- cost -------------------------------------------------------------------
 
 
