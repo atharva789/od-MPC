@@ -93,3 +93,19 @@ def test_normalize_does_not_mutate_input() -> None:
     before = commands.copy()
     normalize_cmd_vel(commands)
     np.testing.assert_array_equal(commands, before)
+
+
+def test_to_continuous_actions_accepts_ndarray_directly() -> None:
+    actions = to_continuous_actions(np.array([[0.1, 0.2], [0.3, 0.4]]))
+    assert actions.shape == (2, 2)
+
+
+def test_to_continuous_actions_rejects_non_2d_ndarray() -> None:
+    """A bare (2,) array has the right trailing dim but no time axis."""
+    with pytest.raises(ValueError, match=r"\(T, 2\)"):
+        to_continuous_actions(np.array([0.1, 0.2]))
+
+
+def test_from_continuous_actions_rejects_non_2d_array() -> None:
+    with pytest.raises(ValueError, match=r"\(T, 2\)"):
+        from_continuous_actions(np.array([0.1, 0.2]))
