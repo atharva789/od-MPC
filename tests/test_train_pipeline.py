@@ -7,6 +7,7 @@ testable without open-dreamer present.
 
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -91,3 +92,15 @@ def test_run_stage_defaults_to_dry_run(fake_checkout: Path) -> None:
     """The default must never launch a GPU job."""
     invocation = run_stage(TrainStage(name="tokenizer"), fake_checkout)
     assert invocation.command[1] == "scripts/train_tokenizer.py"
+
+
+def test_run_stage_executes_the_script_when_not_a_dry_run(fake_checkout: Path) -> None:
+    """The scripts are empty files, so running them as Python is a no-op exit 0."""
+    invocation = run_stage(TrainStage(name="tokenizer"), fake_checkout, dry_run=False)
+    assert invocation.command[1] == "scripts/train_tokenizer.py"
+
+
+def test_run_stage_propagates_a_failing_script(fake_checkout: Path) -> None:
+    (fake_checkout / "scripts" / "train_dynamics.py").write_text("import sys; sys.exit(1)")
+    with pytest.raises(subprocess.CalledProcessError):
+        run_stage(TrainStage(name="dynamics"), fake_checkout, dry_run=False)

@@ -269,3 +269,27 @@ It is still not vendored, to keep one integration pattern rather than two.
     checkout; `od_mpc/data/explorer.py` (96%), `od_mpc/sim/adapter.py` (96%),
     and `od_mpc/train/pipeline.py` (96%) are the next-lowest pure-Python gaps
     for a future session.
+14. A 2026-08-09 session confirmed the blocker is unchanged yet again (no
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+    environment) and closed two of the three remaining pure-Python gaps.
+    `od_mpc/train/pipeline.py` was 96% covered, missing `run_stage`'s
+    `dry_run=False` branch (the actual `subprocess.run` call and its return);
+    added tests that execute it against a fake checkout's empty stub scripts
+    (success) and a script that exits non-zero (`CalledProcessError`),
+    taking the module to 100%. `od_mpc/data/explorer.py` was 96% covered,
+    missing three lines; two (`ExplorerConfig`'s non-positive-speed-ceiling
+    and sub-one-step-count rejections) were straightforward reachable gaps
+    and got tests, taking the module to 99%. The third, `_front_clearance`'s
+    "no ray in the front arc" fallback (line 101), is **unreachable dead
+    code**: `_bearings` always maps index 0 to bearing exactly `0.0`, and
+    `ExplorerConfig.__post_init__` requires `front_arc_deg > 0`, so
+    `abs(bearings[0]) <= half_arc` is true for every validly-constructed
+    config regardless of scan content or ray count. No test was added for it
+    rather than fake an unreachable state through a non-validated config.
+    Suite is now 149 tests / 99% overall coverage (635 statements, 2 missed:
+    `explorer.py:101` above and `sim/adapter.py:93`, the `return
+    core.VirtualMars` success line, which needs either a real checkout or an
+    injected fake `mars_sim_driver` package — left for a future session to
+    weigh against the adapter's real-checkout caution in this file's
+    guidance). M1/A1 remain blocked pending a checkout; `od_mpc/sim/adapter.py`
+    (96%) is the only remaining pure-Python gap for a future session.

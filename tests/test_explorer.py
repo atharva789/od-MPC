@@ -111,6 +111,20 @@ def test_config_rejects_bad_arc() -> None:
         ExplorerConfig(front_arc_deg=270.0)
 
 
+def test_config_rejects_non_positive_speed_ceilings() -> None:
+    with pytest.raises(ValueError, match="Speed ceilings"):
+        ExplorerConfig(max_linear=0.0)
+    with pytest.raises(ValueError, match="Speed ceilings"):
+        ExplorerConfig(max_yaw=-1.0)
+
+
+def test_config_rejects_non_positive_step_counts() -> None:
+    with pytest.raises(ValueError, match="Step counts"):
+        ExplorerConfig(commit_steps=0)
+    with pytest.raises(ValueError, match="Step counts"):
+        ExplorerConfig(reverse_steps=-1)
+
+
 def test_never_emits_non_finite_commands() -> None:
     rng = np.random.default_rng(0)
     state = initial_state()
