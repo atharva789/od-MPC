@@ -139,7 +139,7 @@ Cost = terminal latent distance + path distance + action effort + jerk.
 
 | # | Deliverable | Exit criterion |
 | --- | --- | --- |
-| M0 | Harness + tests | ✅ 145 tests, 99% coverage, no external deps |
+| M0 | Harness + tests | ✅ 150 tests, 99% coverage, no external deps |
 | M1 | Real-sim collection | 1k episodes written; frames visually sane |
 | M2 | Loader integration | A1 confirmed; upstream reads od-MPC shards |
 | M3 | Tokenizer trained | Reconstruction PSNR reported on held-out data |
@@ -293,3 +293,27 @@ It is still not vendored, to keep one integration pattern rather than two.
     weigh against the adapter's real-checkout caution in this file's
     guidance). M1/A1 remain blocked pending a checkout; `od_mpc/sim/adapter.py`
     (96%) is the only remaining pure-Python gap for a future session.
+15. A third 2026-08-09 session confirmed the blocker is unchanged yet again
+    (no `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+    environment) and closed the last remaining pure-Python gap flagged by the
+    prior session: `od_mpc/sim/adapter.py:93` (`return core.VirtualMars`, the
+    success path of `load_virtual_mars`). Added a test that writes a
+    stand-in `mars_sim_driver/core.py` to a `tmp_path` checkout — authored
+    entirely by the test, not copied from innate-os — exposing a class named
+    `VirtualMars` with no members, and asserts `load_virtual_mars` returns
+    exactly that class object. This checks only the adapter's own
+    import-and-return plumbing; it asserts nothing about the real
+    `VirtualMars` API beyond what §2.1 already records as verified from
+    source (that `mars_sim_driver.core` exports a `VirtualMars`), so it does
+    not conflict with the "no behavioural changes without a real checkout"
+    caution. Suite is now 150 tests / 99% overall coverage (635 statements,
+    1 missed: `explorer.py:101`, the confirmed-unreachable dead code noted
+    by the prior session). M1/A1 remain blocked pending a checkout. Every
+    module under `od_mpc/` is now at 100% pure-Python coverage except that
+    one unreachable line, so the coverage sweep this and prior sessions have
+    run is effectively exhausted. A future session with still no
+    checkout/GPU should either delete the confirmed-unreachable
+    `explorer.py:101` branch (no reachable test can cover it as written) or
+    look for genuinely new logic worth testing rather than continuing this
+    sweep — the next real leverage on M1/A1 is still an `INNATE_OS_ROOT` /
+    `OPEN_DREAMER_ROOT` checkout, not more coverage.

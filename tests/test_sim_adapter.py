@@ -104,3 +104,31 @@ def test_load_virtual_mars_wraps_import_failure(
         load_virtual_mars(tmp_path)
 
     assert str(driver_dir) in sys.path
+
+
+def test_load_virtual_mars_returns_the_imported_class(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # A stand-in ``mars_sim_driver.core`` module authored entirely by this
+    # test (not copied from innate-os) that only needs to exist and expose
+    # something named ``VirtualMars`` for load_virtual_mars to import and
+    # return it. This exercises the success-path return without asserting
+    # anything about the real class beyond what SPEC.md 2.1 already records
+    # as verified from source: that ``mars_sim_driver.core`` exports
+    # ``VirtualMars``.
+    driver_dir = _make_checkout(tmp_path)
+    package_dir = driver_dir / "mars_sim_driver"
+    (package_dir / "__init__.py").write_text("")
+    (package_dir / "core.py").write_text("class VirtualMars:\n    pass\n")
+
+    import sys
+
+    monkeypatch.delitem(sys.modules, "mars_sim_driver", raising=False)
+    monkeypatch.delitem(sys.modules, "mars_sim_driver.core", raising=False)
+    try:
+        result = load_virtual_mars(tmp_path)
+        core = sys.modules["mars_sim_driver.core"]
+        assert result is core.VirtualMars
+    finally:
+        sys.modules.pop("mars_sim_driver.core", None)
+        sys.modules.pop("mars_sim_driver", None)
