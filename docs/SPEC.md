@@ -139,7 +139,7 @@ Cost = terminal latent distance + path distance + action effort + jerk.
 
 | # | Deliverable | Exit criterion |
 | --- | --- | --- |
-| M0 | Harness + tests | ✅ 150 tests, 99% coverage, no external deps |
+| M0 | Harness + tests | ✅ 150 tests, 100% coverage, no external deps |
 | M1 | Real-sim collection | 1k episodes written; frames visually sane |
 | M2 | Loader integration | A1 confirmed; upstream reads od-MPC shards |
 | M3 | Tokenizer trained | Reconstruction PSNR reported on held-out data |
@@ -317,3 +317,28 @@ It is still not vendored, to keep one integration pattern rather than two.
     look for genuinely new logic worth testing rather than continuing this
     sweep — the next real leverage on M1/A1 is still an `INNATE_OS_ROOT` /
     `OPEN_DREAMER_ROOT` checkout, not more coverage.
+16. A 2026-08-10 session confirmed the blocker is unchanged yet again (no
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+    environment; also re-confirmed there are no new source files under
+    `od_mpc/` beyond the 18 modules already at 100%, so "genuinely new logic
+    worth testing" was not available either). Took the prior session's other
+    offered option: re-derived that `explorer.py:101` is unreachable
+    (`_bearings` maps ray 0 to bearing exactly `0.0` for every `n_rays >= 1`,
+    verified numerically, and `ExplorerConfig.__post_init__` requires
+    `front_arc_deg > 0`, so the forward arc always contains at least ray 0)
+    and deleted the dead `if not np.any(in_front)` branch and its fallback
+    return, replacing it with a code comment recording why the remaining
+    line is always safe. This is a pure deletion, not new logic beyond the
+    milestone, and touches only `od_mpc/data/explorer.py`, not
+    `sim/adapter.py`. Suite is now 150 tests / **100%** overall coverage
+    (633 statements, 0 missed), with no coverage exclusions anywhere in the
+    repo. Corrected the two current-facing "99% coverage" claims (README
+    status line, SPEC's M0 row) to 100%; left this section's historical
+    per-session entries as accurate records of what coverage stood at when
+    each was written. M1/A1 remain blocked pending a checkout. With the
+    coverage sweep now truly exhausted — no unreachable lines, no untested
+    modules, no coverage exclusions left to close — a future session with
+    still no checkout/GPU has no more pure-Python test-coverage gaps to
+    close in this codebase; it should look for the next §3/§7 item that
+    doesn't require `INNATE_OS_ROOT`/`OPEN_DREAMER_ROOT`/a GPU, or, if none
+    exists, report the blocker plainly rather than inventing busywork.

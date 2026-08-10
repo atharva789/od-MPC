@@ -93,12 +93,15 @@ def _bearings(n_rays: int) -> np.ndarray:
 
 
 def _front_clearance(scan: np.ndarray, config: ExplorerConfig) -> float:
-    """Minimum distance within the forward arc."""
+    """Minimum distance within the forward arc.
+
+    ``_bearings`` maps ray 0 to bearing exactly ``0.0``, and
+    ``ExplorerConfig`` requires ``front_arc_deg > 0``, so the forward arc
+    always contains at least ray 0 for any non-empty scan.
+    """
     bearings = _bearings(len(scan))
     half_arc = math.radians(config.front_arc_deg) / 2.0
     in_front = np.abs(bearings) <= half_arc
-    if not np.any(in_front):
-        return float(np.min(scan))
     return float(np.min(scan[in_front]))
 
 
