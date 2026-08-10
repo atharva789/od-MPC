@@ -342,3 +342,28 @@ It is still not vendored, to keep one integration pattern rather than two.
     close in this codebase; it should look for the next §3/§7 item that
     doesn't require `INNATE_OS_ROOT`/`OPEN_DREAMER_ROOT`/a GPU, or, if none
     exists, report the blocker plainly rather than inventing busywork.
+17. A second 2026-08-10 session confirmed the blocker is unchanged yet again
+    (no `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+    environment). The prior session's line-coverage sweep was exhausted, but
+    line coverage does not imply branch coverage: `pytest --cov-branch`
+    showed `od_mpc/sim/adapter.py` at 97%, missing branch `81->84` —
+    `load_virtual_mars`'s `if package_dir not in sys.path` had only ever been
+    exercised on its True side (path not yet present), never its False side
+    (a second call with the path already inserted, which should skip the
+    insert rather than duplicate the entry). Added
+    `test_load_virtual_mars_does_not_duplicate_sys_path_entry`, which
+    pre-seeds `sys.path` with the driver directory before calling
+    `load_virtual_mars` and asserts the entry is not duplicated — pure
+    Python logic, no checkout needed, same fake-`mars_sim_driver`-module
+    pattern as item 15. Suite is now 151 tests / 100% line coverage *and*
+    100% branch coverage (633 statements, 180 branches, 0 missed either
+    way). `pyproject.toml`'s pytest config does not turn on `--cov-branch`
+    by default, so this gap was invisible to the sweep every session from
+    2026-08-04 through the first 2026-08-10 session ran — worth remembering
+    that "100% coverage" claims in this doc mean line coverage unless stated
+    otherwise. M1/A1 remain blocked pending a checkout. With branch coverage
+    now also exhausted, a future session with still no checkout/GPU has no
+    further coverage gaps (line or branch) to close in this codebase and
+    should look for the next §3/§7 item that doesn't require
+    `INNATE_OS_ROOT`/`OPEN_DREAMER_ROOT`/a GPU, or report the blocker
+    plainly if none exists.

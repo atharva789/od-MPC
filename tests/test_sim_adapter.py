@@ -106,6 +106,30 @@ def test_load_virtual_mars_wraps_import_failure(
     assert str(driver_dir) in sys.path
 
 
+def test_load_virtual_mars_does_not_duplicate_sys_path_entry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Calling load_virtual_mars twice (e.g. across two collection runs in the
+    # same process) must not grow sys.path without bound: the second call
+    # should hit the "already on sys.path" branch and skip the insert.
+    driver_dir = _make_checkout(tmp_path)
+    package_dir = driver_dir / "mars_sim_driver"
+    (package_dir / "__init__.py").write_text("")
+    (package_dir / "core.py").write_text("class VirtualMars:\n    pass\n")
+
+    import sys
+
+    monkeypatch.delitem(sys.modules, "mars_sim_driver", raising=False)
+    monkeypatch.delitem(sys.modules, "mars_sim_driver.core", raising=False)
+    monkeypatch.setattr(sys, "path", [str(driver_dir), *sys.path])
+    try:
+        load_virtual_mars(tmp_path)
+        assert sys.path.count(str(driver_dir)) == 1
+    finally:
+        sys.modules.pop("mars_sim_driver.core", None)
+        sys.modules.pop("mars_sim_driver", None)
+
+
 def test_load_virtual_mars_returns_the_imported_class(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
