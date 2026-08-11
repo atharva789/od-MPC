@@ -139,7 +139,7 @@ Cost = terminal latent distance + path distance + action effort + jerk.
 
 | # | Deliverable | Exit criterion |
 | --- | --- | --- |
-| M0 | Harness + tests | ✅ 150 tests, 100% coverage, no external deps |
+| M0 | Harness + tests | ✅ 151 tests, 100% line and branch coverage, no external deps |
 | M1 | Real-sim collection | 1k episodes written; frames visually sane |
 | M2 | Loader integration | A1 confirmed; upstream reads od-MPC shards |
 | M3 | Tokenizer trained | Reconstruction PSNR reported on held-out data |
@@ -367,3 +367,24 @@ It is still not vendored, to keep one integration pattern rather than two.
     should look for the next §3/§7 item that doesn't require
     `INNATE_OS_ROOT`/`OPEN_DREAMER_ROOT`/a GPU, or report the blocker
     plainly if none exists.
+18. A 2026-08-11 session confirmed the blocker is unchanged yet again (no
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+    environment) and re-verified, independently, that the prior sessions'
+    coverage sweep is still exhausted: `pytest --cov --cov-branch` shows all
+    18 `od_mpc/` source files at 100% line and 100% branch coverage (1378
+    statements, 190 branches, 0 missed either way), and no new source files
+    exist under `od_mpc/` beyond those already covered. With no coverage gap
+    to close and every other open §3/§7 item requiring either a checkout/GPU
+    (A1, A2, A3, A4, latent normalisation) or being scoped to a later
+    milestone (context length and `k_max` are M3/M4 decisions; goal-image
+    sourcing is an M5 decision) and therefore out of bounds for this
+    session's milestone (M1), the only real remaining gap was doc drift:
+    §5's M0 row still read "150 tests, 100% coverage", left behind when the
+    second 2026-08-10 session's branch-coverage test took the suite to 151
+    tests without updating this table (only the narrative entry above and
+    the README status line were corrected at the time). Fixed the M0 row to
+    "151 tests, 100% line and branch coverage, no external deps" to match
+    README and the verified test output. No code changed. M1/A1 remain
+    blocked pending a checkout; there is no further pure-Python action
+    available in this codebase until one of `INNATE_OS_ROOT`,
+    `OPEN_DREAMER_ROOT`, or a GPU becomes available.
