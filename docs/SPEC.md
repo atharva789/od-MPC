@@ -388,3 +388,21 @@ It is still not vendored, to keep one integration pattern rather than two.
     blocked pending a checkout; there is no further pure-Python action
     available in this codebase until one of `INNATE_OS_ROOT`,
     `OPEN_DREAMER_ROOT`, or a GPU becomes available.
+19. A 2026-08-12 session confirmed the blocker is unchanged yet again (no
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+    environment, and no directory matching either checkout name exists
+    anywhere on disk) and independently re-verified the prior session's
+    exhaustion claim rather than taking it on faith: `pytest -q` gives 151
+    passed, and `pytest -q --cov --cov-branch` shows all 18 `od_mpc/` source
+    files at 100% line and 100% branch coverage (1378 statements, 190
+    branches, 0 missed either way), matching both the README status line and
+    this file's M0 row. No new source files exist under `od_mpc/`. Every
+    remaining open item (A1, A2, A3, A4, latent normalisation) needs a
+    checkout or GPU this environment does not have; context length and
+    `k_max` are M3/M4 decisions and goal-image sourcing is an M5 decision,
+    all out of bounds for the current M1 milestone. Made no code change,
+    since inventing one would violate the "don't add features beyond the
+    milestone" constraint with nothing left to test. M1/A1 remain blocked
+    pending a checkout; a future session should check first whether an
+    `INNATE_OS_ROOT` or `OPEN_DREAMER_ROOT` checkout has become available
+    before re-running this same verification sweep.
