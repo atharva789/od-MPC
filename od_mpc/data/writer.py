@@ -185,7 +185,7 @@ class ShardWriter:
         """Close the writer and finalise the last shard."""
         self._flush()
 
-    def __enter__(self) -> "ShardWriter":
+    def __enter__(self) -> ShardWriter:
         return self
 
     def __exit__(

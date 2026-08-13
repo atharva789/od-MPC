@@ -33,7 +33,9 @@ def _make_checkout(root: Path) -> Path:
 # --- driver_package_path -----------------------------------------------------
 
 
-def test_driver_package_path_raises_without_root_or_env_var(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_driver_package_path_raises_without_root_or_env_var(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.delenv(INNATE_OS_ENV_VAR, raising=False)
     with pytest.raises(ValueError, match=INNATE_OS_ENV_VAR):
         driver_package_path()
@@ -45,7 +47,9 @@ def test_driver_package_path_rejects_missing_directory(tmp_path: Path) -> None:
         driver_package_path(missing)
 
 
-def test_driver_package_path_rejects_checkout_without_driver_package(tmp_path: Path) -> None:
+def test_driver_package_path_rejects_checkout_without_driver_package(
+    tmp_path: Path,
+) -> None:
     # A real directory, but not shaped like an innate-os checkout.
     with pytest.raises(FileNotFoundError, match="mars_sim_driver"):
         driver_package_path(tmp_path)

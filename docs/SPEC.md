@@ -441,3 +441,41 @@ It is still not vendored, to keep one integration pattern rather than two.
     `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, or GPU access unblocks M1 or A1
     from here — the lint/format drift above is a legitimate but minor lead,
     not a substitute for that.
+21. A second 2026-08-13 session confirmed the blocker is unchanged yet again
+    (no `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+    environment) and worked through the lint/format drift the prior session
+    left as a lead, one finding at a time rather than a blanket `--fix`.
+    All 15 `ruff check` findings: import-sort (`I001`) and `typing.Iterator`
+    / `typing.Callable` → `collections.abc` (`UP035`) were mechanical, safe
+    under `from __future__ import annotations` (both modules already defer
+    annotation evaluation, so the rewrite is a no-op at runtime); the quoted
+    forward reference in `writer.py` (`UP037`) was equally safe to unquote
+    for the same reason. `tests/test_actions.py`'s `zip()` without `strict=`
+    (`B905`) got `strict=True`, since the surrounding test already asserts
+    the two sequences are the same length — a silent truncation there would
+    hide a real bug. The nine `E501` long lines were manual re-wraps, no
+    semantic change. `mpc/cost.py`'s `B008` (`GoalCostConfig()` called in an
+    argument default) was the one finding that touches a signature: rather
+    than either leave it or change the parameter to `GoalCostConfig | None`
+    (a public-API type change this session had no reviewer to sign off on),
+    it was resolved by hoisting the same call to a module-level
+    `_DEFAULT_GOAL_COST_CONFIG` singleton — behaviourally identical, since
+    Python already evaluates a function's default expression once at def
+    time and `GoalCostConfig` is a frozen (immutable) dataclass, so there
+    was never an aliasing bug, only a lint false-positive. `black` and
+    `isort` were then run for real (not just `--check`): 5 files reformatted
+    by `black`, all pure whitespace/line-wrapping with no AST change: `git
+    diff --ignore-space-at-eol` confirms no non-whitespace edit landed
+    outside the deliberate changes above. `ruff check .`, `black --check .`,
+    and `isort --check .` all now pass clean. `pytest -q` gives 151 passed
+    (unchanged count — no test logic changed) and `pytest -q --cov=od_mpc
+    --cov-branch --cov-report=term-missing` still shows 100% line and 100%
+    branch coverage (635 statements, 180 branches, 0 missed), confirming the
+    cleanup was behaviour-neutral. M1/A1 remain blocked pending a checkout.
+    With the lint/format lead now also closed, this repository has no
+    outstanding pure-Python or tooling-hygiene gap left for a checkout-less,
+    GPU-less session to work: the only lever that moves M1 or A1 from here
+    is a human supplying `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, or GPU
+    access. A future session in this same environment should check for
+    those first, and if still absent, should say so rather than search for
+    another manufactured task.

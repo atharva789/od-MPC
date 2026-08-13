@@ -162,7 +162,9 @@ def test_terminal_state_dominates_the_path() -> None:
     actions = np.zeros((1, 3, 2))
     arrives = np.stack([np.zeros(4), np.zeros(4), goal])[None]
     departs = np.stack([goal, goal, np.zeros(4)])[None]
-    assert goal_latent_cost(arrives, goal, actions) < goal_latent_cost(departs, goal, actions)
+    assert goal_latent_cost(arrives, goal, actions) < goal_latent_cost(
+        departs, goal, actions
+    )
 
 
 def test_action_penalty_prefers_smaller_commands() -> None:
@@ -184,7 +186,9 @@ def test_smoothness_penalty_prefers_steady_commands() -> None:
 
 def test_cost_accepts_multi_dimensional_latents() -> None:
     """Packed (K, H, n_spatial, D) latents must work without reshaping."""
-    costs = goal_latent_cost(np.zeros((2, 3, 5, 4)), np.zeros((5, 4)), np.zeros((2, 3, 2)))
+    costs = goal_latent_cost(
+        np.zeros((2, 3, 5, 4)), np.zeros((5, 4)), np.zeros((2, 3, 2))
+    )
     assert costs.shape == (2,)
 
 

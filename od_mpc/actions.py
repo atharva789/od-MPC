@@ -149,9 +149,7 @@ def to_continuous_actions(
         raw = commands
     else:
         if not commands:
-            raise ValueError(
-                "commands is empty; an episode needs at least one step."
-            )
+            raise ValueError("commands is empty; an episode needs at least one step.")
         raw = np.array([(c.vx, c.wz) for c in commands], dtype=np.float64)
 
     normalized = normalize_cmd_vel(raw, limits)
@@ -180,7 +178,5 @@ def from_continuous_actions(
     """
     physical = denormalize_cmd_vel(actions, limits)
     if physical.ndim != 2:
-        raise ValueError(
-            f"Expected a (T, 2) action array, got shape {physical.shape}."
-        )
+        raise ValueError(f"Expected a (T, 2) action array, got shape {physical.shape}.")
     return [CmdVel(vx=float(row[0]), wz=float(row[1])) for row in physical]

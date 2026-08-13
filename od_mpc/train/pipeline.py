@@ -55,9 +55,7 @@ class TrainStage:
             )
         for override in self.overrides:
             if "=" not in override:
-                raise ValueError(
-                    f"Override {override!r} is not in key=value form."
-                )
+                raise ValueError(f"Override {override!r} is not in key=value form.")
 
 
 @dataclass(frozen=True)

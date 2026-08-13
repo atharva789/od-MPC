@@ -13,12 +13,12 @@ otherwise sit between collection and training.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Iterator
 
 import numpy as np
 
-from ..actions import CmdVel, CmdVelLimits, DEFAULT_LIMITS, to_continuous_actions
+from ..actions import DEFAULT_LIMITS, CmdVel, CmdVelLimits, to_continuous_actions
 from ..sim.protocol import MarsSim
 from .explorer import ExplorerConfig, initial_state, step_explorer
 
@@ -77,9 +77,7 @@ class Episode:
 
     def __post_init__(self) -> None:
         if self.frames.ndim != 4 or self.frames.shape[-1] != 3:
-            raise ValueError(
-                f"frames must be (T, H, W, 3), got {self.frames.shape}."
-            )
+            raise ValueError(f"frames must be (T, H, W, 3), got {self.frames.shape}.")
         lengths = {len(self.frames), len(self.actions), len(self.poses)}
         if len(lengths) != 1:
             raise ValueError(

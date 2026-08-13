@@ -92,7 +92,9 @@ def test_probe_rejects_non_positive_ridge() -> None:
 
 
 def test_probe_rejects_wrong_latent_width_at_predict() -> None:
-    probe = fit_pose_probe(np.random.default_rng(3).normal(size=(20, 4)), np.zeros((20, 3)))
+    probe = fit_pose_probe(
+        np.random.default_rng(3).normal(size=(20, 4)), np.zeros((20, 3))
+    )
     with pytest.raises(ValueError, match=r"\(N, 4\)"):
         probe.predict(np.zeros((5, 7)))
 

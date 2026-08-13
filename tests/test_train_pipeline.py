@@ -101,6 +101,8 @@ def test_run_stage_executes_the_script_when_not_a_dry_run(fake_checkout: Path) -
 
 
 def test_run_stage_propagates_a_failing_script(fake_checkout: Path) -> None:
-    (fake_checkout / "scripts" / "train_dynamics.py").write_text("import sys; sys.exit(1)")
+    (fake_checkout / "scripts" / "train_dynamics.py").write_text(
+        "import sys; sys.exit(1)"
+    )
     with pytest.raises(subprocess.CalledProcessError):
         run_stage(TrainStage(name="dynamics"), fake_checkout, dry_run=False)

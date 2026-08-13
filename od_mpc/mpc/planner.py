@@ -16,8 +16,9 @@ good at anyway.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Protocol
+from typing import Protocol
 
 import numpy as np
 
@@ -150,8 +151,7 @@ def plan_actions(
         costs = np.asarray(rollout_cost(candidates), dtype=np.float64)
         if costs.shape != (config.population,):
             raise ValueError(
-                f"rollout_cost must return ({config.population},), "
-                f"got {costs.shape}."
+                f"rollout_cost must return ({config.population},), " f"got {costs.shape}."
             )
         if not np.all(np.isfinite(costs)):
             raise ValueError(

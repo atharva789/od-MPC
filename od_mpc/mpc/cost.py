@@ -52,11 +52,14 @@ class GoalCostConfig:
             )
 
 
+_DEFAULT_GOAL_COST_CONFIG = GoalCostConfig()
+
+
 def goal_latent_cost(
     predicted_latents: np.ndarray,
     goal_latent: np.ndarray,
     actions: np.ndarray,
-    config: GoalCostConfig = GoalCostConfig(),
+    config: GoalCostConfig = _DEFAULT_GOAL_COST_CONFIG,
 ) -> np.ndarray:
     """Score candidates by distance to a goal latent.
 
@@ -91,8 +94,7 @@ def goal_latent_cost(
     action_batch = np.asarray(actions, dtype=np.float64)
     if action_batch.shape != (population, horizon, 2):
         raise ValueError(
-            f"actions must be ({population}, {horizon}, 2), "
-            f"got {action_batch.shape}."
+            f"actions must be ({population}, {horizon}, 2), " f"got {action_batch.shape}."
         )
 
     # Mean squared error per step keeps the scale independent of latent width,

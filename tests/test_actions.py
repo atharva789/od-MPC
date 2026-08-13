@@ -6,9 +6,9 @@ import numpy as np
 import pytest
 
 from od_mpc.actions import (
+    DEFAULT_LIMITS,
     CmdVel,
     CmdVelLimits,
-    DEFAULT_LIMITS,
     denormalize_cmd_vel,
     from_continuous_actions,
     normalize_cmd_vel,
@@ -51,7 +51,7 @@ def test_roundtrip_via_cmdvel_objects() -> None:
     original = [CmdVel(0.2, -0.5), CmdVel(-0.1, 0.9)]
     decoded = from_continuous_actions(to_continuous_actions(original))
     assert len(decoded) == len(original)
-    for got, want in zip(decoded, original):
+    for got, want in zip(decoded, original, strict=True):
         assert got.vx == pytest.approx(want.vx, abs=1e-6)
         assert got.wz == pytest.approx(want.wz, abs=1e-6)
 

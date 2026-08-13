@@ -9,7 +9,12 @@ import types
 import numpy as np
 import pytest
 
-from od_mpc.data.collector import CollectorConfig, Episode, collect_episode, collect_episodes
+from od_mpc.data.collector import (
+    CollectorConfig,
+    Episode,
+    collect_episode,
+    collect_episodes,
+)
 from od_mpc.data.writer import ShardWriter, episode_to_record
 from od_mpc.sim.protocol import MarsSim
 from od_mpc.sim.stub import RoomBounds, StubMars
