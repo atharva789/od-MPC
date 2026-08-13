@@ -406,3 +406,38 @@ It is still not vendored, to keep one integration pattern rather than two.
     pending a checkout; a future session should check first whether an
     `INNATE_OS_ROOT` or `OPEN_DREAMER_ROOT` checkout has become available
     before re-running this same verification sweep.
+20. A 2026-08-13 session confirmed the blocker is unchanged yet again (no
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+    environment, and no directory matching either checkout name exists
+    anywhere on disk) and independently re-verified: `pytest -q` gives 151
+    passed, and `pytest -q --cov=od_mpc --cov-branch --cov-report=term-missing`
+    shows all 18 `od_mpc/` source files at 100% line and 100% branch coverage
+    (633 statements, 180 branches, 0 missed either way) — matching item 17's
+    figures exactly. Items 18 and 19 both recorded "1378 statements, 190
+    branches" for this same fully-covered state; that number does not match
+    item 17's measurement one session earlier, this session's fresh
+    measurement, or the 635-statement figures items 14-15 recorded before the
+    branch-coverage sweep added a couple of statements. Likely those two
+    sessions ran coverage unscoped (picking up test files too) or otherwise
+    mis-totaled; noted here rather than editing their entries, since the
+    qualitative claim they made (100% line and branch, 0 missed) was still
+    correct. No new source files exist under `od_mpc/`. Also checked a lead
+    no prior session had tried: `ruff check .`, `black --check .`, and
+    `isort --check .` all fail (15 ruff findings, 10 files black would
+    reformat, 3 files isort would resort) — real drift between the dev
+    tooling `pyproject.toml` declares and the repo's actual state. Left
+    unfixed this session: several ruff findings are not pure formatting
+    (`B008` flags the mutable-default-argument pattern on `mpc/cost.py`'s
+    `GoalCostConfig()` default; `UP035` wants `typing.Iterator` /
+    `typing.Callable` rewritten to `collections.abc`), and an automated
+    session with no human to review the diff should not blanket-`--fix`
+    findings that touch signatures rather than whitespace. Recorded as a
+    legitimate, not-yet-attempted lead for a future session to work through
+    deliberately, one finding at a time, rather than a mechanical sweep.
+    M1/A1 remain blocked pending a checkout. This is ten consecutive daily
+    sessions (2026-08-04 through 2026-08-13, several days with two) that have
+    confirmed the same checkout/GPU blocker; the milestone has not moved
+    since M0 closed out around 2026-08-10/11. Only a human supplying
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, or GPU access unblocks M1 or A1
+    from here — the lint/format drift above is a legitimate but minor lead,
+    not a substitute for that.
