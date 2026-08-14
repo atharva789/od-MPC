@@ -501,3 +501,9 @@ It is still not vendored, to keep one integration pattern rather than two.
     or GPU access before re-running this sweep, and should feel free to stop
     re-confirming it in exhaustive prose once the pattern is this
     established — a short "still blocked, still nothing new" is enough.
+23. A second 2026-08-14 session: still blocked, still nothing new. No
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax`; 151 tests
+    pass; 100% line/branch coverage across the same 18 `od_mpc/` modules;
+    `ruff`/`black`/`isort` all clean; README/SPEC status lines still match
+    reality. No code change — thirteenth consecutive session confirming the
+    identical checkout/GPU blocker.
