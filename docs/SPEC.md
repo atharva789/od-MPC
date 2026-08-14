@@ -479,3 +479,25 @@ It is still not vendored, to keep one integration pattern rather than two.
     access. A future session in this same environment should check for
     those first, and if still absent, should say so rather than search for
     another manufactured task.
+22. A 2026-08-14 session confirmed the blocker is unchanged yet again (no
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+    environment, and no directory matching either checkout name exists
+    anywhere on disk). Independently re-verified rather than taking prior
+    entries on faith: `pytest -q` gives 151 passed; `pytest -q --cov=od_mpc
+    --cov-branch --cov-report=term-missing` shows all 18 `od_mpc/` source
+    files at 100% line and 100% branch coverage (635 statements, 180
+    branches, 0 missed); `ruff check .`, `black --check .`, and
+    `isort --check .` all pass clean. `find od_mpc -name "*.py"` lists the
+    same 18 files as every prior sweep — no new source to test. Every
+    remaining open item (A1, A2, A3, A4, latent normalisation) still needs a
+    checkout or GPU this environment does not have; context length and
+    `k_max` are M3/M4 decisions and goal-image sourcing is an M5 decision,
+    out of bounds for the current M1 milestone. Made no code change: with
+    coverage and lint both already exhausted, there was nothing left to
+    close without inventing work beyond the milestone. This is the twelfth
+    session (2026-08-04 through 2026-08-14) to confirm the identical
+    checkout/GPU blocker; nothing has changed since M0 closed. A future
+    session should keep checking for `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`,
+    or GPU access before re-running this sweep, and should feel free to stop
+    re-confirming it in exhaustive prose once the pattern is this
+    established — a short "still blocked, still nothing new" is enough.
