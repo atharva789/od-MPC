@@ -513,3 +513,9 @@ It is still not vendored, to keep one integration pattern rather than two.
     `ruff`/`black`/`isort` all clean; README/SPEC status lines still match
     reality. No code change — fourteenth consecutive session confirming the
     identical checkout/GPU blocker.
+25. A second 2026-08-15 session: still blocked, still nothing new. No
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax`; 151 tests
+    pass; 100% line/branch coverage across the same 18 `od_mpc/` modules;
+    `ruff`/`black`/`isort` all clean; README/SPEC status lines still match
+    reality. No code change — fifteenth consecutive session confirming the
+    identical checkout/GPU blocker.
