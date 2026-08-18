@@ -552,3 +552,29 @@ It is still not vendored, to keep one integration pattern rather than two.
     `ruff`/`black`/`isort` all clean; README/SPEC status lines still match
     reality. No code change — twentieth consecutive session confirming the
     identical checkout/GPU blocker.
+31. A second 2026-08-18 session confirmed the same blocker (no
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax`; 151 tests
+    pass, 100% line/branch coverage, lint clean) but, rather than re-run the
+    coverage sweep a twenty-first time, did the one check no prior session had:
+    an independent adversarial **correctness** audit of the math and
+    edge-case semantics against the §4 invariants, since 100% coverage proves
+    lines execute, not that logic is right. Read every non-trivial module and
+    checked, concretely: `actions.py` clip-then-normalise round-trip and the
+    intended asymmetry (denormalise re-clips); `probe.py` ridge solve with the
+    intercept row genuinely zeroed in the penalty and `arctan2(sin, cos)` in
+    the correct argument order; `metrics.py` `drift_horizon` boundary
+    (uses `errors > tolerance`, so tolerance is inclusive, matching its
+    docstring) and the PSNR formula; `planner.py` elite selection
+    (`argsort(costs)[:elites]` takes the *lowest* costs, correct since lower
+    is better) plus the momentum/warm-start blend; `collector.py`
+    frame/action alignment (`frames[t]`/`poses[t]` captured *before*
+    `commands[t]` is issued and stepped, yielding exactly
+    `(frames[t], actions[t]) -> frames[t+1]` per §4.1, with the final action
+    forming no training pair by design); and `writer.py` shard rotation
+    (rotates at exactly `episodes_per_shard`, no off-by-one). **No correctness
+    bug found** — the logic is sound, not merely covered. This closes the
+    remaining doubt that the exhausted-coverage claim might be masking a wrong
+    result; it is not. M1/A1 remain blocked pending a checkout. With coverage,
+    lint, *and* now logic all independently verified sound, there is no
+    pure-Python lever left: only a human supplying `INNATE_OS_ROOT`,
+    `OPEN_DREAMER_ROOT`, or GPU access moves M1 or A1 from here.
