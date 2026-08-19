@@ -578,3 +578,11 @@ It is still not vendored, to keep one integration pattern rather than two.
     lint, *and* now logic all independently verified sound, there is no
     pure-Python lever left: only a human supplying `INNATE_OS_ROOT`,
     `OPEN_DREAMER_ROOT`, or GPU access moves M1 or A1 from here.
+32. A 2026-08-19 session: still blocked, still nothing new. No
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax`; no checkout
+    directory anywhere on disk; 151 tests pass; 100% line/branch coverage
+    across the same 18 `od_mpc/` modules (635 statements, 180 branches, 0
+    missed); `ruff`/`black`/`isort` all clean; no new source files; no
+    TODO/FIXME markers; README/SPEC status lines still match reality. No code
+    change — twenty-first consecutive session confirming the identical
+    checkout/GPU blocker.
