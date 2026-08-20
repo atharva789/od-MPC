@@ -593,3 +593,11 @@ It is still not vendored, to keep one integration pattern rather than two.
     that item 32 didn't already check; only a human supplying
     `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, or GPU access moves M1/A1 from
     here.
+34. A 2026-08-20 session: still blocked, still nothing new. No
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax`; no checkout
+    directory anywhere on disk; 151 tests pass; 100% line/branch coverage
+    across the same 18 `od_mpc/` modules (635 statements, 180 branches, 0
+    missed); `ruff`/`black`/`isort` all clean; no new source files; no
+    TODO/FIXME markers; README/SPEC status lines still match reality. No code
+    change — twenty-third consecutive session confirming the identical
+    checkout/GPU blocker.
