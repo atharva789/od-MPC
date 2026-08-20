@@ -8,7 +8,7 @@ them, then plan action sequences by rolling candidate commands forward in
 latent space and picking the one that lands nearest a goal image.
 
 > **Status: scaffolding.** The data, validation, and planning logic is written
-> and tested (151 tests, 100% line and branch coverage). Nothing has been
+> and tested (152 tests, 100% line and branch coverage). Nothing has been
 > trained yet. Every
 > claim below about *what the code does* is true; there are no claims yet about
 > what a trained model achieves. See [Roadmap](#roadmap).
@@ -126,7 +126,7 @@ engineering: upstream stays upstream.
 - [x] Pose probe, drift metrics, CEM planner, cost functions
 - [x] Test suite green without external dependencies
 - [ ] Wire the real `VirtualMars` adapter and collect a first dataset
-- [ ] Confirm the loader's continuous-action key against a pinned open-dreamer revision
+- [x] Confirm the loader's continuous-action key against a pinned open-dreamer revision (`actions["continuous"]`; loader needs all three channel keys — see docs/SPEC.md §2.2)
 - [ ] Train the tokenizer; report reconstruction PSNR
 - [ ] Train dynamics; report `drift_horizon`
 - [ ] Close the loop: goal-image MPC, report success rate

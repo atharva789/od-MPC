@@ -73,13 +73,38 @@ collection on a rented GPU box straightforward.
   `x1_hat`, the predicted clean latent, conditioned on a step size and a signal
   level. Inference is autoregressive across frames, diffusion within a frame.
 
+**Action record contract (A1 — confirmed 2026-08-20, read from source on
+`main`, commit `797e41f`).** `Actions` is a three-field container (`binary`,
+`categorical`, `continuous`), each defaulting to `None`. Its `from_dict`
+reconstructs the container by indexing **all three** keys —
+`d["binary"]`, `d["categorical"]`, `d["continuous"]` — so a serialised action
+dict missing any one key raises `KeyError` at load time; each value may be
+`None` but the key must exist. The continuous channel is therefore read under
+`actions["continuous"]`, as A1 assumed, with the added requirement that the two
+sibling keys be present.
+
+The loader that calls `from_dict` is the **pre-tokenized latent** pipeline: the
+data module selects `ProcessLatentAndSlice` when its data-type is `latent`,
+reading `shard-NNNNN.array_record` files via `grain.sources.ArrayRecordDataSource`,
+deserialising each record with a msgpack scheme, and taking `record["latents"]`
+and `Actions.from_dict(record["actions"])`. So a latent record is a dict with
+top-level keys `latents` and `actions`, the latter a three-channel dict.
+
+The msgpack scheme is not bare `msgpack.packb`: numpy arrays are encoded
+explicitly (a tagged dict carrying raw bytes plus shape and dtype), because
+plain msgpack cannot serialise an `ndarray`. The two raw (pre-tokenization)
+pipelines upstream ships (CoinRun, Minecraft VPT) are pickle-based and store
+actions differently again — CoinRun as a categorical array, VPT as raw action
+dicts parsed at load — so neither raw pipeline reads a stored `continuous`
+dict. Only the latent pipeline does.
+
 ## 3. Assumptions
 
 Flagged because they are load-bearing and **not yet verified**.
 
 | # | Assumption | Risk if wrong | How to check |
 | --- | --- | --- | --- |
-| A1 | The loader reads a continuous action channel under `actions["continuous"]` | Collected data will not load | Read `dreamer/data/transforms.py` on a pinned revision |
+| ~~A1~~ | ~~The loader reads a continuous action channel under `actions["continuous"]`~~ | **Confirmed 2026-08-20 — moved to §2.2.** The latent loader's `Actions.from_dict` reads `actions["continuous"]`, and additionally requires the `binary`/`categorical` keys to be present. | ~~Read `dreamer/data/transforms.py`~~ (done) |
 | A2 | `continuous_action_dim: 2` trains without other config changes | Wasted training run | Single short run, watch the loss |
 | A3 | 64×64 frames suffice for navigation | Poor reconstruction | Tokenizer PSNR after stage 1 |
 | A4 | A 2-D action carries enough signal for the dynamics model | Weak action conditioning | Compare rollouts under different action sequences |
@@ -139,9 +164,9 @@ Cost = terminal latent distance + path distance + action effort + jerk.
 
 | # | Deliverable | Exit criterion |
 | --- | --- | --- |
-| M0 | Harness + tests | ✅ 151 tests, 100% line and branch coverage, no external deps |
+| M0 | Harness + tests | ✅ 152 tests, 100% line and branch coverage, no external deps |
 | M1 | Real-sim collection | 1k episodes written; frames visually sane |
-| M2 | Loader integration | A1 confirmed; upstream reads od-MPC shards |
+| M2 | Loader integration | ~~A1 confirmed~~ (done 2026-08-20); upstream reads od-MPC shards |
 | M3 | Tokenizer trained | Reconstruction PSNR reported on held-out data |
 | M4 | Dynamics trained | `drift_horizon` reported at 10 cm and 25 cm |
 | M5 | Closed loop | Goal-image MPC success rate over ≥50 trials |
@@ -164,7 +189,27 @@ It is still not vendored, to keep one integration pattern rather than two.
 
 ## 7. Open questions
 
-1. **A1** — exact record key for continuous actions. Blocks M2.
+1. ~~**A1** — exact record key for continuous actions. Blocks M2.~~
+   **Resolved 2026-08-20** (see §2.2): the continuous key is `actions["continuous"]`,
+   and the loader's `Actions.from_dict` requires all three channel keys present.
+   Two follow-up questions this resolution surfaced, both still open:
+   - **A1a (record format).** od-MPC writes a *raw* (pre-tokenization) record
+     (`video`/`video_shape`/`actions`/`poses`), but the only upstream pipeline
+     that reads a stored `continuous` dict is the *latent* (post-tokenization)
+     one; the two shipped raw pipelines store actions differently and never
+     call `from_dict`. So getting od-MPC's continuous actions into training
+     needs either a latent-shard producer on the od-MPC side (its own
+     tokenization step, record `{latents, actions}`) or a new raw continuous
+     transform upstream — and upstream is All Rights Reserved, so od-MPC cannot
+     add that transform there. Decide the integration path before M3.
+   - **A1b (msgpack + ndarray).** od-MPC's array_record path calls bare
+     `msgpack.packb(record)` on a record containing numpy arrays; plain msgpack
+     cannot serialise an `ndarray` and would raise `TypeError`. Upstream encodes
+     arrays explicitly (tagged bytes + shape + dtype). od-MPC's tests inject a
+     fake msgpack, so this is untested against the real library and is latent.
+     Neither `array_record` nor `msgpack` is installed in this environment, so
+     it could not be reproduced or fixed this session; flagged for a session
+     that has them (both are generic third-party libs, no licensing concern).
 2. **Latent normalisation** — `DynamicsModelConfig` carries `latent_mean` /
    `latent_std`. These must be computed from the MARS dataset, not inherited.
 3. **Context length** — upstream defaults to 192 frames. At 10 Hz that is 19 s,
@@ -601,3 +646,26 @@ It is still not vendored, to keep one integration pattern rather than two.
     TODO/FIXME markers; README/SPEC status lines still match reality. No code
     change — twenty-third consecutive session confirming the identical
     checkout/GPU blocker.
+35. A second 2026-08-20 session **resolved A1** — the longest-standing blocker
+    (open since M0). Prior sessions all treated A1 as needing a local
+    `OPEN_DREAMER_ROOT` checkout, which this environment lacks. This session
+    tried the one thing none had: `git ls-remote` against both upstreams.
+    **Both are reachable over the network** (`nvidia-smi`/`jax`/local checkouts
+    are still absent, so M1 and A2–A4 stay blocked). Shallow-cloned
+    open-dreamer (`797e41f`, still All Rights Reserved) to a scratch dir
+    *outside this repo*, read `dreamer/actions.py`, `dreamer/data/transforms.py`,
+    `serialization.py`, `shard_writer.py`, and `data.py` — reading to describe
+    the interface, copying no source. Confirmed the continuous key is
+    `actions["continuous"]` **and** that `Actions.from_dict` indexes all three
+    channel keys unconditionally (missing key → `KeyError`). od-MPC's
+    `episode_to_record` was emitting `{"continuous": ...}` only — exactly the
+    A1 "data will not load" failure. Fixed it to write all three keys
+    (`binary`/`categorical` as `None`), added
+    `test_record_actions_match_from_dict_contract` pinning the contract, and
+    recorded the verified facts in §2.2, the resolution + two follow-ups
+    (A1a record-format path, A1b msgpack/ndarray) in §7.1. Suite:
+    152 passed, 100% line/branch coverage, `ruff`/`black`/`isort` clean. M1 and
+    A2–A4 remain blocked on a GPU / innate-os run; **but the network route to
+    both upstreams is open**, so a future checkout-less session can read
+    (not run) upstream to resolve interface questions the same way — that is the
+    unlock this session found, beyond A1 itself.

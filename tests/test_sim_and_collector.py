@@ -263,6 +263,19 @@ def test_record_preserves_frames_byte_exactly() -> None:
     np.testing.assert_array_equal(restored, episode.frames)
 
 
+def test_record_actions_match_from_dict_contract() -> None:
+    # open-dreamer's Actions.from_dict indexes actions["binary"],
+    # actions["categorical"], and actions["continuous"] unconditionally,
+    # raising KeyError on any missing key. The record must carry all three.
+    episode = _episode()
+    actions = episode_to_record(episode)["actions"]
+    assert set(actions) == {"binary", "categorical", "continuous"}
+    assert actions["binary"] is None
+    assert actions["categorical"] is None
+    np.testing.assert_array_equal(actions["continuous"], episode.actions)
+    assert actions["continuous"].dtype == np.float32
+
+
 def test_writer_creates_shards(tmp_path) -> None:
     with ShardWriter(tmp_path, episodes_per_shard=2) as writer:
         for _ in range(5):

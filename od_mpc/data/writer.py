@@ -8,9 +8,15 @@ machine without the training stack.
 
 The record schema mirrors the field names open-dreamer's own datasets use
 (``video``, ``video_shape``, ``actions``) and adds ``poses``, which is specific
-to od-MPC and ignored by the upstream loader. The exact key the loader expects
-for a continuous action channel must be confirmed against your open-dreamer
-revision's transforms before the first real training run; see docs/SPEC.md.
+to od-MPC and ignored by the upstream loader.
+
+The continuous action channel key (A1) has been confirmed against open-dreamer
+source: its ``Actions.from_dict`` reads ``actions["continuous"]`` and requires
+all three channel keys (``binary``, ``categorical``, ``continuous``) to be
+present, raising ``KeyError`` on any missing key. The ``actions`` sub-dict is
+therefore written with all three keys, the two unused channels set to ``None``,
+so it is directly consumable by ``Actions.from_dict`` without a ``KeyError``.
+See docs/SPEC.md §2.2 and §7.
 """
 
 from __future__ import annotations
@@ -42,7 +48,14 @@ def episode_to_record(episode: Episode) -> dict[str, object]:
     return {
         "video": episode.frames.tobytes(),
         "video_shape": list(episode.frames.shape),
-        "actions": {"continuous": episode.actions.astype(np.float32)},
+        # All three channel keys are present so the dict round-trips through
+        # open-dreamer's Actions.from_dict, which indexes every key; see the
+        # module docstring and docs/SPEC.md §2.2.
+        "actions": {
+            "binary": None,
+            "categorical": None,
+            "continuous": episode.actions.astype(np.float32),
+        },
         "poses": episode.poses.astype(np.float32),
     }
 
