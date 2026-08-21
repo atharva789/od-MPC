@@ -342,8 +342,26 @@ def _install_fake_array_record_module(monkeypatch: pytest.MonkeyPatch) -> type:
         sys.modules, "array_record.python.array_record_module", array_record_module
     )
 
+    def _fake_packb(obj, use_bin_type=True, default=None):
+        # Mirrors real msgpack: only its own built-in types serialise
+        # directly; anything else goes through `default` (if given) or raises
+        # TypeError, so tests exercise the same failure mode as the real
+        # library instead of silently accepting unsupported types.
+        def _encode(value):
+            if isinstance(value, (type(None), bool, int, float, str, bytes)):
+                return value
+            if isinstance(value, dict):
+                return {k: _encode(v) for k, v in value.items()}
+            if isinstance(value, (list, tuple)):
+                return [_encode(v) for v in value]
+            if default is not None:
+                return _encode(default(value))
+            raise TypeError(f"can not serialize {type(value).__name__!r} object")
+
+        return repr(_encode(obj)).encode()
+
     msgpack_module = types.ModuleType("msgpack")
-    msgpack_module.packb = lambda obj, use_bin_type=True: repr(obj).encode()
+    msgpack_module.packb = _fake_packb
     monkeypatch.setitem(sys.modules, "msgpack", msgpack_module)
 
     return _FakeArrayRecordWriter
@@ -391,3 +409,40 @@ def test_array_record_backend_falls_back_to_npz_without_msgpack(
 
     writer = ShardWriter(tmp_path)
     assert writer.backend == "npz"
+
+
+def test_array_record_backend_encodes_ndarray_actions(
+    tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Plain msgpack has no native encoding for a numpy array and raises
+    # TypeError on one (A1b); this fails unless ShardWriter passes msgpack's
+    # `default` hook to encode it. The fake msgpack module mirrors that
+    # failure mode (see _install_fake_array_record_module), so this would
+    # fail without the fix.
+    _install_fake_array_record_module(monkeypatch)
+
+    with ShardWriter(tmp_path, episodes_per_shard=4) as writer:
+        writer.write(_episode())
+
+
+def test_msgpack_default_rejects_non_ndarray() -> None:
+    from od_mpc.data.writer import _msgpack_default
+
+    with pytest.raises(TypeError, match="not msgpack-serialisable"):
+        _msgpack_default(object())
+
+
+def test_msgpack_round_trips_ndarray_actions_with_real_library() -> None:
+    msgpack = pytest.importorskip("msgpack")
+    from od_mpc.data.writer import _msgpack_default
+
+    episode = _episode()
+    record = episode_to_record(episode)
+    packed = msgpack.packb(record, use_bin_type=True, default=_msgpack_default)
+    unpacked = msgpack.unpackb(packed, raw=False)
+
+    continuous = unpacked["actions"]["continuous"]
+    restored = np.frombuffer(continuous["data"], dtype=continuous["dtype"]).reshape(
+        continuous["shape"]
+    )
+    np.testing.assert_array_equal(restored, episode.actions)

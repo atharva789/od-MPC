@@ -17,6 +17,11 @@ present, raising ``KeyError`` on any missing key. The ``actions`` sub-dict is
 therefore written with all three keys, the two unused channels set to ``None``,
 so it is directly consumable by ``Actions.from_dict`` without a ``KeyError``.
 See docs/SPEC.md §2.2 and §7.
+
+Plain ``msgpack.packb`` has no native encoding for numpy arrays and raises
+``TypeError`` on one (A1b); the ``array_record`` write path passes msgpack's
+own ``default`` hook (``_msgpack_default``) to encode arrays as a tagged dict
+instead.
 """
 
 from __future__ import annotations
@@ -31,6 +36,28 @@ from .collector import Episode
 __all__ = ["ShardWriter", "episode_to_record", "SHARD_STEM"]
 
 SHARD_STEM = "shard"
+
+
+def _msgpack_default(obj: object) -> dict[str, object]:
+    """Encode a value msgpack has no native type for.
+
+    Plain msgpack can only serialise its built-in types and raises
+    ``TypeError`` on anything else (a numpy array, here); this is msgpack's
+    own ``default`` hook mechanism for extending it, not a scheme copied from
+    any upstream project. Arrays round-trip as a tagged dict carrying raw
+    bytes, shape, and dtype.
+
+    Raises:
+        TypeError: If ``obj`` is not a numpy array.
+    """
+    if isinstance(obj, np.ndarray):
+        return {
+            "__ndarray__": True,
+            "data": obj.tobytes(),
+            "shape": list(obj.shape),
+            "dtype": str(obj.dtype),
+        }
+    raise TypeError(f"Object of type {type(obj).__name__} is not msgpack-serialisable")
 
 
 def episode_to_record(episode: Episode) -> dict[str, object]:
@@ -166,7 +193,9 @@ class ShardWriter:
             import msgpack  # type: ignore[import-not-found]
 
             assert self._writer is not None
-            self._writer.write(msgpack.packb(record, use_bin_type=True))
+            self._writer.write(
+                msgpack.packb(record, use_bin_type=True, default=_msgpack_default)
+            )
         else:
             self._pending.append(_record_to_npz_arrays(record, self._in_shard))
 

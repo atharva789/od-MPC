@@ -164,7 +164,7 @@ Cost = terminal latent distance + path distance + action effort + jerk.
 
 | # | Deliverable | Exit criterion |
 | --- | --- | --- |
-| M0 | Harness + tests | ✅ 152 tests, 100% line and branch coverage, no external deps |
+| M0 | Harness + tests | ✅ 154 tests, 100% line and branch coverage, no external deps |
 | M1 | Real-sim collection | 1k episodes written; frames visually sane |
 | M2 | Loader integration | ~~A1 confirmed~~ (done 2026-08-20); upstream reads od-MPC shards |
 | M3 | Tokenizer trained | Reconstruction PSNR reported on held-out data |
@@ -192,7 +192,7 @@ It is still not vendored, to keep one integration pattern rather than two.
 1. ~~**A1** — exact record key for continuous actions. Blocks M2.~~
    **Resolved 2026-08-20** (see §2.2): the continuous key is `actions["continuous"]`,
    and the loader's `Actions.from_dict` requires all three channel keys present.
-   Two follow-up questions this resolution surfaced, both still open:
+   Two follow-up questions this resolution surfaced:
    - **A1a (record format).** od-MPC writes a *raw* (pre-tokenization) record
      (`video`/`video_shape`/`actions`/`poses`), but the only upstream pipeline
      that reads a stored `continuous` dict is the *latent* (post-tokenization)
@@ -201,15 +201,33 @@ It is still not vendored, to keep one integration pattern rather than two.
      needs either a latent-shard producer on the od-MPC side (its own
      tokenization step, record `{latents, actions}`) or a new raw continuous
      transform upstream — and upstream is All Rights Reserved, so od-MPC cannot
-     add that transform there. Decide the integration path before M3.
-   - **A1b (msgpack + ndarray).** od-MPC's array_record path calls bare
-     `msgpack.packb(record)` on a record containing numpy arrays; plain msgpack
-     cannot serialise an `ndarray` and would raise `TypeError`. Upstream encodes
-     arrays explicitly (tagged bytes + shape + dtype). od-MPC's tests inject a
-     fake msgpack, so this is untested against the real library and is latent.
-     Neither `array_record` nor `msgpack` is installed in this environment, so
-     it could not be reproduced or fixed this session; flagged for a session
-     that has them (both are generic third-party libs, no licensing concern).
+     add that transform there. Decide the integration path before M3. **Still
+     open** — unaffected by A1b's resolution below, since it concerns which
+     pipeline reads a record at all, not how one is byte-encoded.
+   - ~~**A1b (msgpack + ndarray).**~~ **Resolved 2026-08-21.** A 2026-08-21
+     session installed the real `array_record`/`msgpack` packages (generic
+     third-party libraries, not open-dreamer or innate-os — no licensing
+     concern) and reproduced the failure directly: `msgpack.packb` on a record
+     containing a numpy array raises `TypeError: can not serialize
+     'numpy.ndarray' object`, confirming the array_record write path was
+     completely broken whenever those optional extras were actually present,
+     not merely untested. Fixed by passing msgpack's own `default` hook
+     (`ShardWriter`'s new `_msgpack_default` in `od_mpc/data/writer.py`) to
+     encode a numpy array as a tagged dict of raw bytes, shape, and dtype —
+     `default` is msgpack's built-in extension mechanism, not a scheme copied
+     from upstream, and no upstream source was reproduced. Verified end-to-end
+     with the real libraries: wrote a shard via `ShardWriter`, read it back
+     with `ArrayRecordReader`, unpacked it with real `msgpack.unpackb`, and
+     confirmed the restored array equals the original bit-for-bit. This makes
+     od-MPC's own writer functional when the `shards` extra is installed; it
+     does **not** by itself make the record upstream-readable, since A1a (the
+     record-format/pipeline question above) is still open and independent.
+     The prior test suite's fake `msgpack` module accepted any object via
+     `repr()`, silently masking this bug for 152 tests across ~24 sessions;
+     the fake now mirrors real msgpack's `default`-or-`TypeError` behaviour so
+     it cannot mask this class of bug again, and a new test
+     (`test_msgpack_round_trips_ndarray_actions_with_real_library`) exercises
+     the real library directly, skipping gracefully when it is not installed.
 2. **Latent normalisation** — `DynamicsModelConfig` carries `latent_mean` /
    `latent_std`. These must be computed from the MARS dataset, not inherited.
 3. **Context length** — upstream defaults to 192 frames. At 10 Hz that is 19 s,
@@ -669,3 +687,38 @@ It is still not vendored, to keep one integration pattern rather than two.
     both upstreams is open**, so a future checkout-less session can read
     (not run) upstream to resolve interface questions the same way — that is the
     unlock this session found, beyond A1 itself.
+36. A 2026-08-21 session confirmed the M1 blocker is unchanged (no
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax`) and
+    **resolved A1b**, the msgpack/ndarray follow-up A1 surfaced. Rather than
+    treat "neither package is installed" as a dead end, this session tried
+    installing them: `pip install array_record msgpack` succeeded (both are
+    generic third-party libraries on PyPI, unrelated to open-dreamer or
+    innate-os, so no licensing concern). With the real libraries present, the
+    suspected bug reproduced exactly as predicted: `msgpack.packb` on a
+    record containing a numpy array raised `TypeError`, meaning
+    `ShardWriter`'s `array_record` backend was completely non-functional
+    whenever its own optional extra was actually installed — not merely an
+    untested edge case. Fixed by passing msgpack's own `default` extension
+    hook (`_msgpack_default` in `od_mpc/data/writer.py`) to encode a numpy
+    array as a tagged dict of raw bytes, shape, and dtype; verified
+    end-to-end with the real libraries (write via `ShardWriter`, read back
+    with `ArrayRecordReader`, unpack with real `msgpack.unpackb`, array
+    equality holds). Separately fixed the test suite's fake `msgpack` module,
+    which had been accepting any object via `repr()` — that laxity is why 24
+    prior sessions' coverage sweeps never caught this; the fake now mirrors
+    real msgpack's default-or-`TypeError` behaviour. Added three tests: one
+    through the (now-accurate) fake module confirming the fix, one asserting
+    `_msgpack_default` itself rejects non-array input, and one
+    (`test_msgpack_round_trips_ndarray_actions_with_real_library`) that runs
+    against the real library via `pytest.importorskip("msgpack")`, so it
+    exercises real behaviour here and skips cleanly where the extra is
+    absent. Suite: 154 passed (1 skipped when `msgpack` is absent), 100%
+    line/branch coverage, `ruff`/`black`/`isort` clean; verified both with
+    the extras installed and after uninstalling them, matching the `.[dev]`-
+    only baseline CI uses. A1a (record-format/pipeline choice) is untouched
+    and still open — it is independent of how bytes are encoded. M1 and
+    A2–A4 remain blocked on a GPU / innate-os checkout; a future session
+    should keep checking for those before re-running the confirmation sweep,
+    and can also consider going further down the network-reachable-upstream
+    path item 35 opened (e.g. reading more of open-dreamer's data pipeline to
+    make progress on A1a) as another checkout-less lever.
