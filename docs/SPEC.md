@@ -26,8 +26,11 @@ Everything here was read from source or official docs, not inferred.
 
 `VirtualMars` lives at
 `ros2_ws/src/mars_bot/mars_sim_driver/mars_sim_driver/core.py` in
-[innate-inc/innate-os](https://github.com/innate-inc/innate-os) (Apache-2.0,
-`main`, read 2026-08-04).
+[innate-inc/innate-os](https://github.com/innate-inc/innate-os), whose repo
+root `LICENSE` is Apache-2.0. **But that blanket label does not cover this
+package**: see the correction in §6 — `mars_sim_driver`'s own `package.xml`
+declares `<license>Proprietary</license>`, the only one of 20 packages in the
+repo to do so (verified 2026-08-21, commit `21787db`).
 
 | Member | Signature | Notes |
 | --- | --- | --- |
@@ -182,7 +185,20 @@ publish, distribute, sublicense, or sell". od-MPC is public, so:
   factual interface description and is fine. Reproducing its source is not.
 - Integration is by subprocess and by user-supplied checkout.
 
-innate-os is Apache-2.0, so vendoring would be permissible with attribution.
+innate-os's repo-root `LICENSE` is Apache-2.0, so most of it would be
+vendorable with attribution. **`mars_sim_driver` is the exception** — the one
+package `VirtualMars` lives in. Verified 2026-08-21 (commit `21787db`,
+network-cloned to a scratch dir outside this repo, deleted after inspection):
+its `package.xml` reads `<license>Proprietary</license>`, while every one of
+the other 19 packages in the repo — including its sibling `mars_sim` (the
+URDF/mesh asset package `mars_sim_driver` loads) — reads `Apache-2.0`. This is
+not a stray default; it is an isolated, deliberate carve-out on exactly the
+code this project needs to run. Until a human (repo owner or counsel)
+confirms terms for `mars_sim_driver` specifically, treat it like
+open-dreamer: **do not vendor, execute, or otherwise use `mars_sim_driver`
+source**, even for local, non-distributed episode collection. Reading its
+`package.xml`/import list to determine licensing status, as this session did,
+is fine; running it to collect training data is not, until that's resolved.
 It is still not vendored, to keep one integration pattern rather than two.
 
 **Before every push:** confirm no upstream code has drifted in.
@@ -722,3 +738,41 @@ It is still not vendored, to keep one integration pattern rather than two.
     and can also consider going further down the network-reachable-upstream
     path item 35 opened (e.g. reading more of open-dreamer's data pipeline to
     make progress on A1a) as another checkout-less lever.
+37. A second 2026-08-21 session picked up item 35's "network is reachable"
+    unlock and pushed on the actual M1 blocker rather than re-confirming it.
+    Two findings, one good and one that reframes the blocker rather than
+    removing it:
+    - **GPU is not actually required.** `pip install mujoco` (a generic PyPI
+      package, no licensing concern) succeeds; `mujoco.mj_step` runs CPU
+      physics fine with no GPU. Offscreen rendering initially failed
+      (`glfw`/`EGL`/`OSMesa` all errored — no display, no GL libraries), but
+      installing the system packages `libosmesa6`, `libegl1`, `libegl-mesa0`
+      via `apt-get` (root, this container) fixed both the `MUJOCO_GL=egl` and
+      `MUJOCO_GL=osmesa` backends: a real `mujoco.Renderer(...).render()` call
+      returned a genuine `(64, 64, 3)` uint8 image. So the long-standing "M1
+      needs a GPU" framing (§7 item 6 onward) was never quite right — MuJoCo
+      needs software OpenGL libraries, which are just system packages, not a
+      GPU. This environment can now, in principle, run MuJoCo physics and
+      rendering.
+    - **But `mars_sim_driver` — the package `VirtualMars` lives in — declares
+      itself Proprietary,** discovered by shallow-cloning innate-os (network
+      access confirmed reachable, same as item 35) to a scratch dir outside
+      this repo and reading `package.xml` files, then deleting the clone once
+      the fact was extracted. See §2.1 and §6 for the full correction: the
+      repo-root `LICENSE` is Apache-2.0, but `mars_sim_driver/package.xml` is
+      the sole exception among 20 packages, reading
+      `<license>Proprietary</license>`. That is exactly the package this
+      project would need to execute to actually collect episodes for M1. This
+      is a **new and more fundamental blocker than "no checkout, no GPU"**: even
+      with both now in reach (network clone + working headless MuJoCo), running
+      `mars_sim_driver` to produce training data is not something this session
+      judged itself authorized to do, by the same logic §6 already applies to
+      open-dreamer. This needs a human decision — confirm the license
+      situation with innate-os's maintainers, or get explicit authorization —
+      before any session runs `VirtualMars` for real. No code in this
+      repository was changed as a result; `pytest -q` is unchanged at 154
+      passed, 1 skipped (100% line/branch coverage, lint clean, re-verified).
+      This session's leverage was entirely in narrowing what actually blocks
+      M1: it is not infrastructure, it is licensing authorization, and that is
+      squarely a human decision, not a technical one this session can resolve
+      by reading more source.

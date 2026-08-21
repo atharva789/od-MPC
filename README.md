@@ -113,12 +113,19 @@ od-MPC is MIT. It **vendors neither dependency**, and that is deliberate:
 | Project | License | How it is used |
 | --- | --- | --- |
 | [open-dreamer](https://github.com/next-state/open-dreamer) | **All Rights Reserved** | User-supplied checkout, invoked as a subprocess. No code copied. |
-| [innate-os](https://github.com/innate-inc/innate-os) | Apache-2.0 | User-supplied checkout, imported at runtime. No code copied. |
+| [innate-os](https://github.com/innate-inc/innate-os) | Apache-2.0 repo-wide, **except** `mars_sim_driver` | User-supplied checkout, imported at runtime. No code copied. |
 
 open-dreamer's license grants no permission to copy, modify, or redistribute,
 so no part of it appears here — not source, not config files, not snippets in
 this README. od-MPC describes its API surface and calls it. That is also better
 engineering: upstream stays upstream.
+
+`mars_sim_driver` — the package `VirtualMars` lives in — declares
+`<license>Proprietary</license>` in its own `package.xml`, unlike every other
+package in the innate-os repo. See docs/SPEC.md §6 for detail; until that is
+resolved with innate-os's maintainers, this project does not execute
+`mars_sim_driver` for real, which is why the sim collection checkbox below is
+still unchecked.
 
 ## Roadmap
 
