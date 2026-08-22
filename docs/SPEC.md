@@ -776,3 +776,13 @@ It is still not vendored, to keep one integration pattern rather than two.
       M1: it is not infrastructure, it is licensing authorization, and that is
       squarely a human decision, not a technical one this session can resolve
       by reading more source.
+38. A 2026-08-22 session: still blocked, still nothing new. No
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax`; the
+    `mars_sim_driver` licensing block from item 37 is unchanged (no human
+    decision recorded yet); 154 tests pass, 1 skipped; 100% line/branch
+    coverage across the same 18 `od_mpc/` modules (639 statements, 182
+    branches, 0 missed); `ruff`/`black`/`isort` all clean; no new source
+    files; no TODO/FIXME markers; README roadmap and status line still match
+    reality. No code change — the only lever that moves M1 or A1a from here
+    is a human supplying `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, GPU access,
+    or a licensing decision on `mars_sim_driver`.
