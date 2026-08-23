@@ -797,3 +797,13 @@ It is still not vendored, to keep one integration pattern rather than two.
     the identical checkout/GPU/licensing blocker. Only a human supplying
     `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, GPU access, or a licensing
     decision on `mars_sim_driver` moves M1 or A1a from here.
+40. A 2026-08-23 session: still blocked, still nothing new. No
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax`; no checkout
+    directory anywhere on disk; the `mars_sim_driver` licensing block from
+    item 37 is unchanged; 154 tests pass, 1 skipped; 100% line/branch
+    coverage across the same 18 `od_mpc/` modules (639 statements, 182
+    branches, 0 missed); `ruff`/`black`/`isort` all clean; no new source
+    files; no TODO/FIXME markers; README roadmap and status line still match
+    reality. No code change — only a human supplying `INNATE_OS_ROOT`,
+    `OPEN_DREAMER_ROOT`, GPU access, or a licensing decision on
+    `mars_sim_driver` moves M1 or A1a from here.
