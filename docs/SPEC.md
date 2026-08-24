@@ -839,3 +839,14 @@ It is still not vendored, to keep one integration pattern rather than two.
     at the newest available upstream commit; only a human supplying
     `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, GPU access, or a licensing
     decision on `mars_sim_driver` moves M1 or A1a from here.
+43. A second 2026-08-24 session re-confirmed the identical state a few hours
+    later: no `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax`;
+    both upstreams' `HEAD` unchanged since item 42 (innate-os `58ceb911`,
+    open-dreamer `797e41f`), so the license block was not re-checked against
+    stale data, since re-cloning would have added nothing new; 154 tests
+    pass, 1 skipped; 100% line/branch coverage across the same 18 `od_mpc/`
+    modules (639 statements, 182 branches, 0 missed); `ruff`/`black`/`isort`
+    all clean; README roadmap and status line still match reality. No code
+    change — only a human supplying `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`,
+    GPU access, or a licensing decision on `mars_sim_driver` moves M1 or A1a
+    from here.
