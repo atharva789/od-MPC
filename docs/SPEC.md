@@ -818,3 +818,24 @@ It is still not vendored, to keep one integration pattern rather than two.
     Nothing left to check that item 40 didn't already check; only a human
     supplying `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, GPU access, or a
     licensing decision on `mars_sim_driver` moves M1 or A1a from here.
+42. A 2026-08-24 session confirmed the blocker is unchanged (no
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax`; no checkout
+    directory anywhere on disk); 154 tests pass, 1 skipped; 100% line/branch
+    coverage across the same 18 `od_mpc/` modules (639 statements, 182
+    branches, 0 missed); `ruff`/`black`/`isort` all clean; no new source
+    files; no TODO/FIXME markers; README roadmap and status line still match
+    reality. Rather than stop at re-confirming the same facts, this session
+    re-checked the one thing that can actually change without a human
+    decision here: whether `mars_sim_driver`'s license itself moved. Network
+    is reachable (`git ls-remote` on both upstreams succeeds); innate-os's
+    `HEAD` has advanced since item 37's check (`21787db` &rarr; `58ceb911`,
+    2026-08-21 to now), so this was a genuine re-check against new upstream
+    content, not a repeat of stale data. Shallow-cloned innate-os to a
+    scratch dir outside this repo, read `mars_sim_driver/package.xml` at the
+    new `HEAD`, deleted the clone. **Unchanged**: still
+    `<license>Proprietary</license>`, still the sole exception among the
+    repo's packages. open-dreamer's `HEAD` is unchanged at `797e41f` since
+    item 35. No code change — the licensing block from item 37 still stands
+    at the newest available upstream commit; only a human supplying
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, GPU access, or a licensing
+    decision on `mars_sim_driver` moves M1 or A1a from here.
