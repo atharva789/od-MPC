@@ -870,3 +870,42 @@ It is still not vendored, to keep one integration pattern rather than two.
     still stands at the newest available upstream commit; only a human
     supplying `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, GPU access, or a
     licensing decision on `mars_sim_driver` moves M1 or A1a from here.
+45. A second 2026-08-25 session re-confirmed the identical state a few hours
+    later: no `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax`;
+    154 tests pass, 1 skipped; 100% line/branch coverage across the same 18
+    `od_mpc/` modules (639 statements, 182 branches, 0 missed);
+    `ruff`/`black`/`isort` all clean; no new source files; no TODO/FIXME
+    markers; README roadmap and status line still match reality. Checked
+    whether either upstream `HEAD` had moved since item 44: **innate-os had**
+    again (`55a3e01c` &rarr; `d8c91072`), open-dreamer had not (`797e41f`,
+    unchanged since 2026-08-20). Shallow-cloned innate-os to a scratch dir
+    outside this repo at the new `HEAD`, read `mars_sim_driver/package.xml`
+    and every other package's, deleted the clone. **Unchanged**:
+    `mars_sim_driver` still declares `<license>Proprietary</license>`, still
+    the sole exception among the repo's 20 packages, all 19 others still
+    `Apache-2.0`. No code change.
+
+    This is the twenty-eighth session (2026-08-04 through 2026-08-25,
+    several days with two) confirming the identical checkout/GPU/licensing
+    blocker since M0 closed. The milestone has not moved in three weeks, and
+    every lever a checkout-less, GPU-less session can pull — test coverage,
+    lint/format, logic audit, upstream re-reads on every `HEAD` change — has
+    been pulled repeatedly with the same result. Flagging explicitly for a
+    human: **M1 (real-sim collection) cannot proceed without one of the
+    following, and no amount of further automated re-checking will change
+    that:**
+    1. A licensing decision on `mars_sim_driver` (confirmation from
+       innate-os's maintainers, or explicit authorization to use it despite
+       the `Proprietary` tag), **or**
+    2. A supplied `INNATE_OS_ROOT` checkout with usage rights already
+       cleared, **or**
+    3. A different, unblocked path to M1 that does not route through
+       `mars_sim_driver` (e.g. a licensed alternative simulator, or a
+       decision to defer M1 and reorder the roadmap around what portions of
+       M2-M5 do not need real-sim frames — worth a human call, not an
+       automated one, since it changes the project's scope).
+    Until one of those happens, future scheduled sessions should check
+    upstream `HEAD` movement (cheap, already automated above) but should stop
+    re-running the full pure-Python sweep more than once every few days —
+    coverage, lint, and logic have been independently verified sound multiple
+    times over and are not going to silently regress between runs.
