@@ -189,9 +189,10 @@ innate-os's repo-root `LICENSE` is Apache-2.0, so most of it would be
 vendorable with attribution. **`mars_sim_driver` is the exception** — the one
 package `VirtualMars` lives in. Verified 2026-08-21 (commit `21787db`,
 network-cloned to a scratch dir outside this repo, deleted after inspection),
-re-verified 2026-08-24 at commit `58ceb911`, and re-verified again 2026-08-25
-at commit `55a3e01c` (the current `HEAD` as of this session; open-dreamer's
-`HEAD` is unchanged at `797e41f` since 2026-08-20):
+re-verified 2026-08-24 at commit `58ceb911`, re-verified 2026-08-25 at commit
+`55a3e01c`, and re-verified again 2026-08-26 at commit `b231cccb` (the current
+`HEAD` as of this session; open-dreamer's `HEAD` is unchanged at `797e41f`
+since 2026-08-20):
 its `package.xml` reads `<license>Proprietary</license>`, while every one of
 the other 19 packages in the repo — including its sibling `mars_sim` (the
 URDF/mesh asset package `mars_sim_driver` loads) — reads `Apache-2.0`. This is
@@ -921,3 +922,20 @@ It is still not vendored, to keep one integration pattern rather than two.
     `Apache-2.0`. No code change. This is the twenty-ninth session since M0
     closed confirming the identical checkout/GPU/licensing blocker; nothing
     beyond item 45's flagged human decision will move M1 or A1a from here.
+47. A second 2026-08-26 session (same day as item 46, ~15 hours later): still
+    blocked, still nothing new. No `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`,
+    `nvidia-smi`, or `jax`; 154 tests pass, 1 skipped; README/SPEC status
+    lines still match reality. Per item 45's guidance, did not re-run the
+    full pure-Python sweep (coverage/lint/logic have been independently
+    verified sound repeatedly and are not going to silently regress) and
+    instead only did the cheap check: upstream `HEAD` movement. innate-os had
+    advanced again (`c8fafb13` → `b231cccb`), open-dreamer had not (`797e41f`,
+    unchanged since 2026-08-20). Shallow-cloned innate-os to a scratch dir
+    outside this repo at the new `HEAD`, read every package's `package.xml`,
+    deleted the clone. **Unchanged**: `mars_sim_driver` still the sole
+    `Proprietary` package among the repo's 20; all 19 others still
+    Apache-2.0. No code change — thirtieth session since M0 closed confirming
+    the identical checkout/GPU/licensing blocker; nothing beyond item 45's
+    flagged human decision (a licensing call on `mars_sim_driver`, a supplied
+    `INNATE_OS_ROOT` with rights cleared, or a scope decision to route M1
+    around it) will move M1 or A1a from here.
