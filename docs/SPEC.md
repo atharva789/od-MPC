@@ -909,3 +909,15 @@ It is still not vendored, to keep one integration pattern rather than two.
     re-running the full pure-Python sweep more than once every few days —
     coverage, lint, and logic have been independently verified sound multiple
     times over and are not going to silently regress between runs.
+46. A 2026-08-26 session: still blocked, still nothing new. No
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax`; 154 tests
+    pass, 1 skipped; README/SPEC status lines still match reality. Checked
+    upstream `HEAD` movement per item 45's guidance: innate-os had advanced
+    again (`d8c91072` → `c8fafb13`), open-dreamer had not (`797e41f`,
+    unchanged since 2026-08-20). Shallow-cloned innate-os to a scratch dir
+    outside this repo at the new `HEAD`, read every package's
+    `package.xml`, deleted the clone. **Unchanged**: `mars_sim_driver` still
+    the sole `Proprietary` package among the repo's 20; all 19 others still
+    `Apache-2.0`. No code change. This is the twenty-ninth session since M0
+    closed confirming the identical checkout/GPU/licensing blocker; nothing
+    beyond item 45's flagged human decision will move M1 or A1a from here.
