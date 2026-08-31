@@ -1092,3 +1092,28 @@ It is still not vendored, to keep one integration pattern rather than two.
     the three flagged inputs arrives (a licensing call on `mars_sim_driver`,
     a supplied `INNATE_OS_ROOT` with rights cleared, or a scope decision to
     route M1 around it).
+56. A 2026-08-31 session confirmed the blocker is unchanged. No
+    `INNATE_OS_ROOT`, `OPEN_DREAMER_ROOT`, `nvidia-smi`, or `jax` in this
+    environment; `pytest -q` gives 154 passed, 1 skipped, matching the
+    README/SPEC status lines; `ruff check .`, `black --check .`, and
+    `isort --check .` all pass clean. Per item 45's guidance, did not re-run
+    the full pure-Python coverage/logic sweep and instead only did the cheap
+    check: upstream `HEAD` movement. innate-os had advanced again
+    (`4f82cf2` → `94650dc`), open-dreamer had not (`797e41f`, unchanged since
+    2026-08-20). Shallow-cloned innate-os to a scratch dir outside this repo
+    at the new `HEAD`, read every package's `package.xml` and the repo-root
+    `LICENSE`, deleted the clone. **Unchanged**: `mars_sim_driver` still the
+    sole `Proprietary` package among the repo's 20; all 19 others still
+    Apache-2.0; repo-root `LICENSE` still Apache-2.0.
+    No code change — this is now the thirty-ninth session since M0 closed
+    (2026-08-04 through 2026-08-31, over a month) confirming the identical
+    checkout/GPU/licensing blocker. The recommendation from items 50, 52, 53,
+    54, and 55 stands unanswered across seven calendar days now: a human
+    should decide whether to keep running this session on its current
+    cadence, or pause it until one of the three flagged inputs arrives (a
+    licensing call on `mars_sim_driver`, a supplied `INNATE_OS_ROOT` with
+    rights cleared, or a scope decision to route M1 around it). Since that
+    recommendation continues to go unanswered turn over turn with no new
+    information produced, this session is escalating it as a direct
+    notification to the repository owner rather than appending it silently
+    again.
